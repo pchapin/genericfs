@@ -1,0 +1,145 @@
+%
+% This is a presentation on the GenericFS project in general.
+% Think of it as an overview.
+%
+
+\documentclass[landscape]{slides}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amstext}
+\usepackage{color}
+\usepackage{fancyvrb}
+\usepackage[pdftex]{graphicx}
+\usepackage{listings}
+\usepackage{times}
+\usepackage{url}
+
+\input{slide-macros}
+
+% Default settings for code listings.
+\lstset{
+  language=C,
+  basicstyle=\ttfamily,
+  stringstyle=\ttfamily,
+  commentstyle=\ttfamily,
+  xleftmargin=0.25in,
+  showstringspaces=false}
+
+\title{\color{titlecolor}GenericFS Overview}
+\author{
+  \begin{tabular}{c}
+  \\[3mm]
+  \Large{Peter C. Chapin} \\[2mm]
+  \normalsize{Computer Information Systems}\\[5mm]
+  \includegraphics[scale=0.80]{VermontTech_stack_361.jpg}\\[16mm]
+  \end{tabular}
+}
+\date{October 31, 2013}
+
+\begin{document}
+
+\color{Black}
+\pagecolor{Background}
+
+\maketitle
+
+%%%%%
+
+\startslide{What is GenericFS?}
+\begin{citemize}
+  \item A simple file system driver for Linux.
+    \begin{citemize}
+    \item Developed for educational purposes.
+    \item Documentation given high priority.
+    \item Serves as a starting point for other file system projects.
+    \end{citemize}
+  \item Provides no special features.
+    \begin{citemize}
+    \item Just ``generic'' POSIX-style file system.
+    \item No optimizations attempted.
+    \end{citemize}
+\end{citemize}
+\stopslide
+
+%%%%%
+
+\startslide{Obtaining GenericFS}
+Check out from the project's GitHub site
+
+\vspace{5mm}
+\centerline{\url{https://github.com/pchapin/genericfs.git}}
+
+\begin{citemize}
+\item Source code in C.
+\item Documentation (mostly) in \LaTeX.
+\item Code base currently assumes kernel version 3.6.11.
+\end{citemize}
+\stopslide
+
+%%%%%
+
+\startslide{Project Organization}
+\begin{citemize}
+\item Kernel Module
+\begin{citemize}
+\item Once loaded, kernel will understand GenericFS partitions.
+\item Provides \texttt{/proc} interface to file system statistics.
+\end{citemize}
+
+\item Disk Tool
+\begin{citemize}
+\item Used to initialize (format) GenericFS partitions.
+\item Used to ``manually'' create GenericFS structures on disk.
+\item Used to inspect GenericFS partitions.
+\item Used to check and repair GenericFS partitions.
+\end{citemize}
+\end{citemize}
+\stopslide
+
+%%%%%
+
+\startslide{Documentation}
+GenericFS extensively documented, supporting its \cemph{educational mission}.
+
+\begin{citemize}
+\item General file system concepts.
+\item Kernel module development and testing methods.
+\item Kernel file system internals.
+\item GenericFS disk layout and design.
+\item Possible GenericFS extensions for student projects.
+\end{citemize}
+\stopslide
+
+%%%%%
+
+\startslide{Future Directions}
+\begin{citemize}
+\item Release to the public.
+\begin{citemize}
+\item Potentially useful at other school.
+\item Interesting to others writing file system modules.
+\end{citemize}
+
+\item Implement some extensions.
+\begin{citemize}
+\item Can code be modularized so that extensions can be mixed and matched?
+\end{citemize}
+
+\item Drivers for other systems. Windows? QNX?
+  Phoenix\footnote{\url{https://github.com/pchapin/phoenix}}?
+\item Instrument for file system debugging.
+\item High integrity version with proved properties.
+\end{citemize}
+\stopslide
+
+%%%%%
+
+\startslide{Contact Information}
+\centerline{Peter C. Chapin}
+\makeatletter
+\centerline{PChapin@vtc.vsc.edu}
+\makeatother
+\centerline{\url{https://github.com/pchapin/genericfs}}
+\stopslide
+
+\end{document}

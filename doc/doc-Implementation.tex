@@ -1,0 +1,280 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE   : doc-Implementation.tex
+% SUBJECT: Implementation details for GenericFS
+% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
+%
+% TODO:
+%
+% + See comments in the text.
+%
+% Send comments or bug reports to:
+%
+%    Peter C. Chapin
+%    Computer Information Systems
+%    Vermont Technical College
+%    Williston, VT 05495
+%    PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Implementation}
+\label{sec:implementation}
+
+For information on implementing file systems under Linux see the file \filename{vfs.txt} in the
+\filename{Documentation/filesystems} directory of the kernel source tree. That document
+describes the VFS and some of the things that need to be done to support it\footnote{Keep in
+  mind that the documentation in \filename{Documentation}, like all Linux kernel documentation
+  you might find, is not necessarily up to date. Always cross check what the documentation tells
+  you against the source code.}. You can also look at some of the file systems that have already
+been implemented. For example the directory \filename{fs/ext2} contains the implementation of
+the ext2 file system.
+
+It is generally much easier to implement a file system for read-only access than it is to handle
+the fully general case. This is because file systems that can only be read don't need to support
+the methods that modify file system structures and they don't need to worry about consistency,
+locking, dirty cache buffers, and so forth. Thus the initial implementation of \GenericFS\
+provides just read-only operation.
+
+There are several steps involved in implementing a new file system for Linux. However, not all
+steps need to be implemented before the system becomes useful. The VFS will provide reasonable
+defaults for some operations, and you can either just return errors from or provide no
+implementation for the others until you support them. In this way a preliminary implementation
+of \GenericFS\ can be loaded into the kernel and used, perhaps with reduced functionality, even
+before all aspects of it are finished.
+
+There are several operations structures that need to be initialized with pointers to actual
+functions. I will call these functions ``methods.'' The \code{super_block} structure contains
+methods for looking up and disposing of inodes. The \code{inode_operations} structure contains
+methods for dealing with individual inodes. The \code{file_operations} structure contains
+methods for dealing with open files. These methods, and the supporting functions they require,
+constitute the bulk of the driver code.
+
+\subsection{The Disk Tool}
+\label{sec:implementation-disktool}
+
+To facilitate testing the \GenericFS\ distribution includes a user mode program that can modify
+a disk partition directly to build various file system data structures. This tool allows you to
+``manually'' construct a \GenericFS\ file system for use by the kernel module even if the kernel
+module is not in a state where it can write \GenericFS\ structures reliably. The tool also helps
+you debug the kernel module. After making a change to the module and then running a test case,
+you can unmount the \GenericFS\ partition and use the disk tool to inspect the \GenericFS\
+structures that the module created or modified.
+
+The disk tool takes the name of a disk partition on the command line and presents a menu of
+options using a curses based interface. The options are mostly self explanatory. Note that the
+disk tool combines the functionality of a file system creation tool, a file system checking
+tool, and a file system dumping tool, all in an interactive package. While this is nice for
+experimenting with \GenericFS\ stand-alone versions of these tools should also be written at
+some point for better scriptability.
+
+Note that the disk tool accesses the partition directly by opening the block device file.
+\emph{Never run the disk tool on a mounted partition!} This approach bypasses the usual file
+system handling code and lets the disk tool communicate directly with the disk cache. In this
+way the tool can inspect and modify file system data structures arbitrarily.
+
+The disk tool uses an \code{ioctl} call on the open block device in order to find out the size
+of the partition. The code in Figure \ref{fig:get-size} illustrates this.
+
+\begin{figure*}[tp]
+  \centering
+  \begin{wbigbox}
+\begin{lstlisting}{}
+/* Determine the partition size in blocks. */
+if (ioctl(fd, BLKGETSIZE, &size) >= 0) {
+  block_count = size / (BLOCKSIZE / 512);
+  printf("%ld blocks; %ld bytes (4K blocks)\n",
+    block_count, block_count * BLOCKSIZE);
+}
+else {
+  printf("Can't figure out partition size!\n");
+  return 1;
+}
+\end{lstlisting}
+  \end{wbigbox}
+  \caption{Getting Partition Size}
+  \label{fig:get-size}
+\end{figure*}
+
+Here \code{block_count} is a long integer representing the number of blocks on the partition.
+\code{BLKGETSIZE} is a special number defined in \code{<sys/ioctl.h>}. The \code{ioctl} call
+returns the size of the partition in 512 byte sectors. \code{BLOCKSIZE} is 4 Kbytes in our case.
+
+Note that if the partition is not a multiple of 4 Kbytes the last few bytes of the partition
+will be unused. The partition size is always a multiple of 512 bytes since it contains an
+integer number of sectors.
+
+You can also use a program such as \filename{od} directly on the partition's device file to view
+the data in the partition. However \filename{od} does not understand \GenericFS, of course, and
+thus won't display the data in an easily understood manner. However, it can be useful for
+debugging the disk tool itself. See the \filename{od} manual page for more information.
+
+\subsubsection*{Exercises}
+
+\begin{enumerate}
+
+\item The disk tool should never be used on a partition that has been mounted. Why not?
+
+\item Enhance the current disk tool. For example
+
+  \begin{enumerate}
+    \item Enhance or extend one of the existing options.
+    \item Implement one of the currently unimplemented options.
+    \item Add a new option.
+    \item Add the ability to edit \GenericFS\ data structures as well as
+      display them.
+  \end{enumerate}
+  
+\item Implement a disk tool program for some other file system such as ext2.
+
+\item Implement stand-alone \GenericFS\ tools for making, checking, and dumping a \GenericFS\
+  file system. Review the ext2 tools for doing this for ideas on what they might do and how they
+  might work.
+
+\end{enumerate}
+
+\subsection{Mount a \GenericFS\ Partition}
+\label{sec:implementation-mount}
+
+The main file of the \GenericFS\ driver module is \filename{super.c}. It is in this file that
+the super block methods are located. This includes the necessary code to support mounting a
+\GenericFS\ partition. The central structure in this file is \code{gfs_type} of type struct
+\code{file_system_type}. The definition of struct \code{file_system_type} is in
+\filename{linux/fs.h}. The name used in that structure is the type name used with the
+\filename{mount} command's -t option. The flag \code{FS_REQUIRES_DEV} forces the file system
+onto a device. The function \code{gfs_read_super} reads the super block out of a given partition
+and is used during the mount operation.
+
+Note that the \code{kill_sb} member of the file system structure is invoked by the kernel when a
+partition is unmounted. It points at a kernel helper function that takes care of some
+administrative tasks and then calls the \code{put_super} and \code{write_super} super block
+methods.
+
+The module initializer, \code{init_module}, registers \GenericFS\ with the kernel. Once the
+driver is inserted, the file \filename{/proc/filesystems} should list ``genericfs'' as one of
+the supported file system types due to this registration.
+
+The super block reader function just uses a kernel helper routine to do the dirty work of
+initializing a \code{super_block} structure. The helper routine then invokes
+\code{gfs_fill_super} to read the \GenericFS\ super block and prepare the \GenericFS\ specific
+in memory data structures. The basic idea is to use \code{bread} to read the block containing
+the super block, verify that the super block is in the right format for \GenericFS, fill in some
+fields of the VFS's \code{super_block} structure, and allocate an inode for the root directory
+of the partition. Getting the root directory will cause the \code{read_inode} super block method
+to be invoked.
+
+When reading data from the disk into variables in memory the helper functions \code{le16_to_cpu}
+and \code{le32_to_cpu}. These functions convert little endian data to the native CPU format. For
+little endian CPUs they are macros that do nothing. However, if the module is ever compiled on a
+big endian CPU these functions will do an important translation. \GenericFS\ mandates little
+endian data on disk but we still want big endian processors to be able to handle it.
+
+One issue that comes up when reading inodes is that there is more information in the disk inode
+than can be put into the members of the VFS inode. This is because the VFS is not interested in
+how the data is laid out on the disk. Each file system manages that in its own way. The VFS
+can't provide the necessary members to hold layout specific information since the methods used
+by different file systems are likely to be radically different.
+
+To deal with this, the inode structures in memory are actually larger then the VFS inode. In
+particular each \GenericFS\ inode is represented using a \code{gfs_inode_info} structure. This
+structure contains \GenericFS\ specific members and a VFS inode member as well. Yet the VFS
+deals only with the VFS inode enclosed in each \code{gfs_inode_info}.
+
+Since there will likely be a large number of inodes in the inode cache it is important to
+allocate the \code{gfs_inode_info} structures efficiently. Thus the driver creates a kernel SLAB
+cache for this purpose. A SLAB cache is a cache optimized for allocation of a large number of
+objects that are all the same size. There would be a different SLAB cache for different sized
+objects; at any point in time the kernel has several SLAB caches active (see
+\filename{/proc/slabinfo}). Figure \ref{fig:init-slab} shows how a SLAB cache is created for the
+inode structures.
+
+\begin{figure*}[tp]
+  \centering
+  \begin{wbigbox}
+\begin{lstlisting}{}
+kmem_cache_t *gfs_icache;
+
+int init_module(void)
+{
+  gfs_icache = kmem_cache_create(
+      "gfs_inode_icache",
+      sizeof(struct gfs_inode_info),
+      0,
+      SLAB_RECLAIM_ACCOUNT | SLAB_MEM_SPREAD,
+      init_once);
+
+  if (gfs_icache == 0) {
+    printk(KERN_ERR "GenericFS: Can't allocate inode cache.\n");
+    return -ENOMEM;
+  }
+  /* The rest of init_module. */
+}
+
+void cleanup_module(void)
+{
+  /* The rest of cleanup_module. */
+  if (!gfs_icache) kmem_cache_destroy(gfs_icache);
+}
+\end{lstlisting}    
+  \end{wbigbox}
+  \caption{Initializing and Removing a SLAB Cache}
+  \label{fig:init-slab}
+\end{figure*}
+
+Figure \ref{fig:init-slab} shows the pointer to \code{kmem_cache_t} as a global variable. This
+is necessary so that the other functions in the module are able to access it. Note especially
+that the SLAB cache should not be stored in a mounted partition's super block since the same
+SLAB cache can be used for all mounted \GenericFS\ partitions.
+
+A pointer to an inode initialization function \code{init_once} is also passed to
+\code{kmem_cache_create}. The SLAB cache calls this function for each object it allocates. In
+the current implementation of \GenericFS\ this function simply calls a kernel helper function
+\code{inode_init_once} to take care of the VFS inode member. In the future it might also be
+necessary to initialize the \GenericFS\ specific parts of the inode structure.
+
+\subsection{Read the Root Directory}
+\label{sec:implementation-readroot}
+
+In this and following sections I will use the phrase ``root directory'' to mean the top level
+directory on a \GenericFS\ partition.
+
+After one can successfully mount and unmount a \GenericFS\ partition the next step is to
+implement enough code so that the command \command{ls -l} returns appropriate information about
+the files stored in the root directory.
+
+When a user mode process tries to scan a directory it calls the POSIX functions \code{opendir},
+\code{readdir}, and \code{closedir}. In Linux these functions are not system calls but rather
+library functions. In particular, \code{opendir} actually invokes the \code{open} system call
+using the \code{O_DIRECTORY} flag to open the directory being scanned. The \code{readdir}
+function then calls \code{getdents} to get directory entries, several at a time. It turns out
+that in the implementation of \code{open} the existence of the \code{lookup} method in the
+directory's inode operations is checked. If the method is \code{NULL} then \code{open} assumes
+that the file being opened is not a directory and it returns the ``Not a directory'' error code.
+This activity can be witnessed if you write a short demonstration program that scans a directory
+and then use the \command{strace} command on that program.
+
+At this stage we don't need to provide an actual \code{lookup} method, but to satisfy
+\code{open} you will need to at least provide a place holder method so that you can install a
+non-NULL pointer in the directory inode operations structure.
+
+To satisfy the \code{getdents} system call we need to implement the \code{readdir} method in the
+file operations structure.
+
+\subsection{Read Files}
+\label{sec-implementation-readfiles}
+
+\subsection{Read Metadata}
+\label{sec-implementation-readmeta}
+
+\subsection{Read Subdirectories}
+\label{sec-implementation-readsubdirs}
+
+\subsection{Write Files}
+\label{sec-implementation-writefiles}
+
+\subsection{Write Metadata}
+\label{sec-implementation-writemeta}
+
+\subsection{Write Subdirectories}
+\label{sec-implementation-writesubdirs}
+
+\subsection{Special Files}
+\label{sec-implementation-special}

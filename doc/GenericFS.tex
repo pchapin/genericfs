@@ -1,0 +1,114 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE   : GenericFS.tex
+% SUBJECT: Description of the Generic File System for Linux
+% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
+%
+% This document describes how to build, debug, and test file system modules in Linux using the
+% GenericFS file system as a complete example. Readers are invited to experiment with GenericFS
+% and several suggestions for such experiments are given in exercises.
+%
+% TODO:
+%
+% + See comments in the text.
+%
+% Send comments or bug reports to:
+%
+%    Peter C. Chapin
+%    Computer Information Systems
+%    Vermont Technical College
+%    Williston, VT 05495
+%    PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%+++++++++++++++++++++++++++++++++
+% Preamble and global declarations
+%+++++++++++++++++++++++++++++++++
+\documentclass[twocolumn]{article}
+\usepackage{listings}
+\usepackage[pdftex]{graphics}
+\usepackage{hyperref}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
+
+% I really should put this in a package file! Note how I set up some parameters before opening
+% the listing. This used to be necessary when I was using verbatim environments. Is it still
+% necessary with the listings package? Are those other settings just being overridden?
+%
+\newsavebox{\savebigbox}
+\newenvironment{bigbox}{\begin{lrbox}{\savebigbox}
+  \begin{minipage}{0.95\columnwidth}%
+    \small\setlength{\baselineskip}{0.9\baselineskip}}
+{\end{minipage}\end{lrbox}\fbox{\usebox{\savebigbox}}}
+
+% This version should be used for full width boxes.
+\newsavebox{\savewbigbox}
+\newenvironment{wbigbox}{\begin{lrbox}{\savewbigbox}
+  \begin{minipage}{0.9\textwidth}%
+    \small\setlength{\baselineskip}{0.9\baselineskip}}
+{\end{minipage}\end{lrbox}\fbox{\usebox{\savewbigbox}}}
+
+% Various macros.
+\newcommand{\newterm}[1]{\emph{#1}}
+\newcommand{\code}[1]{\lstinline!#1!}
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\command}[1]{\texttt{#1}}
+\newcommand{\GenericFS}{\texttt{GenericFS}}
+\newcommand{\todo}[1]{\textit{TODO: #1}}
+
+%++++++++++++++++++++
+% The document itself
+%++++++++++++++++++++
+\begin{document}
+
+% The following are settings for the listings package.
+\lstset{language=C,
+%        basicstyle=\small,
+        stringstyle=\ttfamily,
+        showstringspaces=false}
+
+%-----------------------
+% Title page information
+%-----------------------
+\title{GenericFS Documentation}
+\author{\copyright\ Copyright 2013 by Peter C. Chapin}
+\date{October 31, 2013}
+\maketitle
+
+\tableofcontents
+
+\section*{Legal}
+\label{sec:legal}
+
+\textit{Permission is granted to copy, distribute and/or modify this document under the terms of
+the GNU Free Documentation License, Version 1.1 or any later version published by the Free
+Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no
+Back-Cover Texts. A copy of the license is included in the file \texttt{GFDL.txt} distributed
+with the \LaTeX\ source of this document.}
+
+\section{Introduction}
+\label{sec:intro}
+
+\textbf{generic}. \textit{A product, such as a drug or detergent, that is sold without a brand
+name or trademark. --The American Heritage Dictionary}
+
+This document contains a detailed description of the \GenericFS\ Linux file system. \GenericFS\
+is a simple file system with no special features or extra, unnecessary complications. It is
+intended to serve primarily as an educational tool. By studying or enhancing \GenericFS\ you can
+learn about Linux kernel programming, Linux file systems specifically, and file systems in
+general.
+
+To understand this description of \GenericFS\ you will need to be familiar with C programming.
+You should also know something about how to use Linux, and be comfortable working with the Linux
+command line shell. If you want to experiment with \GenericFS\ you will need a machine on which
+you can be root so that you can partition disks, load kernel modules, and do other
+administrative tasks. You should avoid using a machine that you depend on. \GenericFS\ is
+experimental. It may crash your kernel.
+
+\input{doc-Preliminaries}
+\input{doc-GenericFS-Structure}
+\input{doc-Implementation}
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

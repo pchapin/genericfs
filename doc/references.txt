@@ -1,0 +1,50 @@
+
+Linux File Systems
+------------------
+
+Btrfs
+       http://btrfs.wiki.kernel.org/
+
+Ext2
+       http://e2fsprogs.sourceforge.net/ext2.html
+       http://web.mit.edu/tytso/www/linux/ext2intro.html
+         (Nice paper describing the design of ext2fs, with references).
+
+Ext3
+       http://en.wikipedia.org/wiki/Ext3
+       
+Ext4
+       http://en.wikipedia.org/wiki/Ext4
+
+FAT32 (for Linux) (old?)
+       http://bmrc.berkeley.edu/people/chaffee/fat32.html
+
+JFS Home Page
+       http://jfs.sourceforge.net/
+       http://en.wikipedia.org/wiki/JFS_(file_system)
+
+NTFS (for Linux)
+       http://www.linux-ntfs.org/
+
+Reiser3
+       http://en.wikipedia.org/wiki/Reiserfs
+       
+Reiser4
+       http://en.wikipedia.org/wiki/Reiser4
+
+Tux3
+       http://tux3.org/
+
+XFS
+       http://www.xfs.org/
+       http://en.wikipedia.org/wiki/Xfs
+
+VFAT (for Linux)
+       http://bmrc.berkeley.edu/people/chaffee/vfat.html
+
+Various Other References
+-------------------------
+
+Description of FAT32 (a bit sketchy)
+       http://support.microsoft.com/support/kb/articles/q154/9/97.asp
+

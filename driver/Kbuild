@@ -1,0 +1,17 @@
+obj-m += genericfs.o
+ccflags-y := -I$(src)/../shared
+genericfs-objs := dir.o file.o global.o inode.o namei.o ops.o super.o
+
+dir.o:         dir.c $(src)/../shared/genericfs.h global.h dir.h
+
+file.o:        file.c $(src)/../shared/genericfs.h global.h file.h
+
+global.o:      global.c $(src)/../shared/genericfs.h global.h
+
+inode.o:       inode.c $(src)/../shared/genericfs.h global.h inode.h ops.h
+
+namei.o:       namei.c $(src)/../shared/genericfs.h global.h namei.h
+
+ops.o:         ops.c $(src)/../shared/genericfs.h global.h dir.h file.h inode.h namei.h ops.h super.h
+
+super.o:       super.c $(src)/../shared/genericfs.h global.h inode.h ops.h super.h

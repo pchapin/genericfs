@@ -1,0 +1,244 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE   : doc-Preliminaries.tex
+% SUBJECT: How to get set up for GenericFS development.
+% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
+%
+% TODO:
+%
+% + See comments in the text.
+%
+% Send comments or bug reports to:
+%
+%    Peter C. Chapin
+%    Computer Information Systems
+%    Vermont Technical College
+%    Williston, VT 05495
+%    PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Preliminaries}
+\label{sec:preliminaries}
+
+It is not my intention to discuss kernel programming in detail here. There are other sources of
+information about that subject that you could consult, including the \textit{Linux Kernel
+  Development} guide that is included in the \GenericFS\ documentation set. However, I do want
+to talk about the mechanics of compiling and testing \GenericFS. If you are only interested in
+installing \GenericFS\ and do not intend to modify or enhance it, you should still read the
+subsection below on compiling \GenericFS. Otherwise you can skip the rest of this section.
+
+\subsection{Compiling \GenericFS}
+\label{sec:compiling}
+
+\GenericFS\ comes in two parts: a kernel module that contains the file system driver and a
+``disk tool'' that can be used to initialize (format), read, and edit \GenericFS\ partitions.
+These two components are compiled individually.
+
+The module build process is highly integrated with the kernel build system. You need to use
+properly constructed makefiles if you are to build a module in a consistent way. The makefile
+provided with the \GenericFS\ module assumes that you will be compiling the driver for use with
+the same kernel that is executing at the time you do the compilation. If this is not the case
+you will need to modify the makefile to reflect your intended paths. Furthermore you must first
+configure the kernel sources against which you are building your module. More information about
+configuring the kernel and compiling modules can be found in the \textit{Linux Kernel
+  Development} companion document.
+
+To compile \GenericFS\ change into the \filename{driver} directory and issue the command
+\command{make}. The driver will be left in the file \filename{genericfs.ko}.
+
+To compile the disk tool change into the \filename{disktool} directory and issue the command
+\command{make}. The disk tool will be left in the executable file \filename{disktool}.
+
+\subsection{Setting Up a \GenericFS\ Partition}
+\label{sec:partition}
+
+To test \GenericFS\ you will need a free disk partition. The size is not critical although it
+would be nice if it was large enough to exercise the file system in a reasonable way. You can
+put \GenericFS\ on a physical disk partition or you can prepare a file system image stored in an
+ordinary file. The second method is more flexible and probably the best choice for
+experimentation.
+
+\subsubsection{Physical Partition}
+
+You can use the \command{fdisk} command to create a partition on a physical disk or on a virtual
+disk created by virtualization software such as VirtualBox. You may have to reboot your machine
+after creating the new partition so the kernel will see the new partition table. Look for the
+device files for the new disk and its partitions in the \filename{/dev} directory.
+
+\todo{Describe the process of using \command{fdisk} in more detail.}
+
+\subsubsection{File System Image}
+
+If you do not have any unpartitioned disk space on your system, you can still create a partition
+for \GenericFS\ by using the loop back driver. This allows you to treat an ordinary file like a
+block device. Once configured you can make a \GenericFS\ file system inside this file just as
+you would on any other partition. Furthermore once you load the \GenericFS\ driver you'll be
+able to mount the file system inside this file as well. Another advantage to this approach is
+that you can copy the file containing the \GenericFS\ partition to another computer for
+inspection or experimentation. This is easier than moving physical disk drives around.
+
+To set up an image file, first create a file of some suitable size using the \command{dd}
+command. For example, to create a 200 MiB file use a command such as
+\begin{verbatim}
+$ dd if=/dev/zero of=disk.img count=409600
+\end{verbatim}
+
+Here the input file is the special file \filename{/dev/zero} which returns an endless stream of
+zero bytes. The output file is \filename{disk.img} in this example but it could have any name.
+The count is given in units of 512 bytes so 409600 corresponds to an output file of exactly 200
+MiB.
+
+\subsubsection{Formatting}
+
+To create a \GenericFS\ file system on your new partition or image file you should use an
+appropriate user mode tool. An interactive tool of this sort is included in the \GenericFS\
+package and is described in Section~\ref{sec:implementation-disktool}. It is called
+\command{disktool}. It plays the role of both \command{mkfs} and \command{fsck}. It also gives
+you a way of creating and viewing \GenericFS\ data structures on your partition and thus can be
+helpful for testing and debugging the \GenericFS\ driver.
+
+Start \command{disktool} providing the name of the partition on the command line. This name is
+either the device file representing the physical partition or the name of a prevously created
+image file, such as \filename{disk.img} as described above. The disk tool treats both kinds of
+``partitions'' the same way. Use the Initialize menu option to format the partition.
+
+The disk tool also sets every byte on the partition to 0x55. This takes time and is unnecessary
+in general. However, it makes debugging file system data structures a little easier by erasing
+any previous and potentially confusing information. Note that 0x55 is used instead of 0x00 so
+the ``unused'' bytes stand out more in the hex dumps provided by \command{disktool}.
+
+\subsubsection{Mounting}
+
+Before \GenericFS\ can be used it is necessary to load the \GenericFS\ driver. In the
+\filename{driver} directory, as root, use the command
+\begin{verbatim}
+# insmod genericfs.ko
+\end{verbatim}
+
+This command inserts the \GenericFS\ module. You can check to see if the driver loaded correctly
+by inspecting the contents of \filename{/proc/filesystems}. The ``genericfs'' file system should
+be included in the list (probably at the bottom).
+
+Once the image file is formatted and once the \GenericFS\ driver has been loaded into the
+kernel, you can mount the image file, as root, using \emph{one} of the commands below
+\begin{verbatim}
+# mount /dev/partition gfs
+# mount -o loop disk.img gfs
+\end{verbatim}
+
+The first command is appropriate if you created a physical partition for \GenericFS. The second
+command is appropriate if you created an image file. It uses the loopback driver to mount the
+file system inside the image file. Use only one of the two commands shown, depending on your
+situation.
+
+The name \filename{gfs} is the mount point. It should be a pre-existing empty directory. After
+executing the mount command you should be able to change into the \filename{gfs} directory and
+use the files there normally.
+
+\subsubsection{Unmounting}
+
+Before you can manipulate a \GenericFS\ partition directly with the disk tool you must first
+unmount it. This can be done, as root, with the command
+\begin{verbatim}
+# umount gfs
+\end{verbatim}
+
+Here \filename{gfs} is the name of the mount point.
+
+It is not necessary to unload the \GenericFS\ driver when you unmount a partition. You should be
+able to unmount and then re-mount a partition multiple times without touching the driver.
+However, if you make a change to the driver (and recompile it) you will need to unload and then
+reload the driver before your change will be visible to your system. Be aware that all
+\GenericFS\ partitions need to be unmounted before you can unload the driver. As root unload the
+driver with the command
+\begin{verbatim}
+# rmmod genericfs
+\end{verbatim}
+
+Notice that you don't include the \filename{.ko} extension on the name when you unload the
+driver. Technically you \command{insmod} a file but \command{rmmod} a driver. Thus
+\command{insmod} requires the name of a file, but \command{rmmod} only expects the driver's
+name.
+
+\subsubsection*{Exercises}
+
+\begin{enumerate}
+
+\item The \command{fdisk} program will assign partition type 83 (``Linux'') to any new partition
+  by default. Is this really an appropriate type for an experimental file system?
+
+\item What would be a reasonable size for an experimental GenericFS partition? Justify your
+  answer. You may need to consult information about the GenericFS on-disk layout in
+  Section~\ref{sec:structure}.
+
+\item Set up a file system image file and try formatting the image file using a standard file
+  system such as ext3. Try mounting it and copying some files to it.
+
+\item Would there be any complications in putting a file for the loop back driver on a
+  \GenericFS\ partition and then building a \GenericFS\ file system inside that file? Think
+  about what happens inside the \GenericFS\ driver. Try it.
+
+\end{enumerate}
+
+\subsection{Debugging \GenericFS}
+\label{sec:debugging}
+
+Debugging kernel modules is difficult because they are not normal processes and thus can't be
+controlled by a debugger. There are a number of techniques you can use, however.
+
+\subsubsection{Basic Debugging Techniques}
+
+The first technique is to simple include extra \code{printk} calls in your module. You can then
+observe which of these calls are triggered by looking for the output in the system log file (or
+in other places depending on the configuration of \command{syslog} and the priority level you
+give the \code{printk}). This technique can be effective but it won't help you if the functions
+in your module are not getting called. Also you should be sure to enclose your \code{printk}
+statements with conditional compilation directives so that they can be turned on and off by
+simply recompiling your module with appropriate options.
+
+In fact, there is currently a facility in the \GenericFS\ source for producing and managing
+debugging messages this way. The details are in \filename{global.h} but the specific macros of
+interest are shown in Figure~\ref{fig:debugging-macros}.
+
+\begin{figure*}[htbp]
+  \centering
+  \begin{wbigbox}
+\begin{lstlisting}{}
+#define DEBUG_HEADER KERN_INFO "GenericFS DEBUG: %s: "
+
+#if DEBUG_LEVEL == 0
+  #define GENERIC_DEBUG(level, statement)
+#else
+  #define GENERIC_DEBUG(level, statement) \
+    if (DEBUG_LEVEL >= level) { statement; }
+#endif
+
+#define ENTERED \
+  GENERIC_DEBUG(1, printk(DEBUG_HEADER "Entered\n", __FUNCTION__))
+\end{lstlisting}
+  \end{wbigbox}
+  \caption{\GenericFS\ Debugging Macros (in \filename{global.h})}
+  \label{fig:debugging-macros}
+\end{figure*}
+
+Several different ``debugging levels'' can be used with these macros. Level one is the default
+and is intended to output messages when each significant \GenericFS\ function is entered. This
+is easily accomplished by using the \texttt{ENTERED} macro at the top of each such function. A
+debug level of zero removes the debugging messages entirely. Higher debug levels are intended to
+trace progressively finer details in the execution of the module. This is implemented by using
+the \texttt{GENERIC\-\_DEBUG} macro where appropriate. To change the debug level one must modify
+its definition in \filename{global.h} and recompile the module. In a future version of the
+\GenericFS\ driver, the debug level might be dynamically configurable.
+
+With the debugging messages enabled you can gain insight on the operation of the \GenericFS\
+driver by observing what happens when a particular user mode program executes. For example, to
+help understand how \GenericFS\ services a particular system call, write a program that invokes
+that system call and then see which functions (if any) in the \GenericFS\ driver get invoked.
+The program \command{strace} can help you find precisely which system calls your test program
+uses. You should use a tool like \command{strace} instead of just guessing what system calls are
+invoked because many apparent ``system'' calls are actually library functions built on top of
+the true system calls\footnote{POSIX does not specify which functions are system calls and which
+  are library functions. POSIX only requires that all functions it specifies be supported.}.
+
+\subsubsection{Kernel Debugger}
+
+\todo{Talk about using the kernel debugger.}
