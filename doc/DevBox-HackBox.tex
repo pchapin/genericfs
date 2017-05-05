@@ -1,0 +1,543 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE    : DevBox-HackBox.tex
+% AUTHOR  : (C) Copyright 2016 by Peter C. Chapin
+% SUBJECT : DevBox and HackBox installation and use.
+%
+% DevBox and HackBox are virtual machine images for use in my operating systems class.
+%
+%       Peter C. Chapin
+%       Computer Information Systems
+%       Vermont Technical College
+%       Randolph Center, VT. 05061
+%       PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ++++++++++++++++++++++++++++++++
+% Preamble and global declarations
+% ++++++++++++++++++++++++++++++++
+\documentclass[twocolumn]{article}
+
+\usepackage{fancyvrb}
+\usepackage{hyperref}
+\usepackage{url}
+
+% \pagestyle{headings}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
+
+% +++++++++++++++++++
+% The document itself
+% +++++++++++++++++++
+\begin{document}
+
+% ----------------------
+% Title page information
+% ----------------------
+\title{DevBox and HackBox}
+\author{\copyright\ Copyright 2016 by Peter C. Chapin}
+\date{Last Revised: August 8, 2016}
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+When doing operating system work you ideally want to run your experimental software on a
+different computer than the one you use for development. An error in an operating system module
+or driver has the potential to corrupt the entire machine; testing on your development system
+may lead to headaches if such corruption should occur. Also it is generally not possible to
+debug an operating system while running the debugger tool on the same machine. Two machines are
+needed so the debugger and the debugee can be properly separated.
+
+In this document I call the development system ``DevBox.'' It is a full desktop system with all
+the usual tool and conveniences. It is on DevBox where you spend most of your time working and
+compiling your programs. It is on DevBox where you run source level debuggers.
+
+The experimental system I call call ``HackBox.'' It is not a full desktop system and instead is
+minimally configured. The smaller, lighter configuration makes testing and error recovery
+easier.
+
+This document describes how to set up the preconfigured DevBox and HackBox virtual machines I
+provide for my operating systems course. I describe how to install the VirtualBox VM software,
+how to import and run the DevBox and HackBox virtual machines, and how to exercise the system to
+verify that it is set up properly. At the end of this document I include some notes on how
+DevBox and HackBox were built. That information is for reference only and not essential for
+using the systems.
+
+\section{Installing VirtualBox}
+
+The lab machines should already have the VirtualBox VM software installed. If you are using a
+lab machine you can skip this section and continue with Section~\ref{sec:booting-guests}. If you
+intend to run DevBox and HackBox on your personal machine you will need to first install
+VirtualBox on your system.
+
+DevBox and HackBox together consume significant resources. Before trying to install them on your
+personal machine you should be sure you have at least 4 GiB of memory and at least 50 GiB of
+free disk space. You also need to have hardware virtualization support turned on in the BIOS of
+your host computer. Most new machines come with this feature turned on by default. Older
+machines may require you to enter the BIOS and activate this feature. If your machine is very
+old it may not support hardware virtualization at all. Finally, DevBox and HackBox assume that
+your host has at least two cores.
+
+If the host does not meet the requirements above it may be possible to reconfigure the virtual
+machines so that they will work anyway. However you may have to sacrifice some features or
+endure suboptimal performance in that case.
+
+If you still wish to proceed, begin by downloading VirtualBox from
+\url{http://www.virtualbox.org}. Be sure to download both the main installer for your system
+\emph{and} the Extension Pack. The Extension Pack adds important functionality that DevBox and
+HackBox requires. \emph{The virtual machines will likely not boot in their default configuration
+  without the Extension Pack installed!}
+
+Run the VirtualBox installer. After the installer completes double click on the Extension Pack
+to install that as well.
+
+\section{Booting the Guests}
+\label{sec:booting-guests}
+
+DevBox and HackBox are distributed as virtual appliances. This is a standard file format that
+includes not only the virtual hard disk (compressed) but also the virtual machine's initial
+configuration. Once you import the virtual appliance into your virtualization software you can
+boot a virtual machine by just starting it as you might start a real computer. 
+
+The virtual appliance file format is accepted by several different virtualization products.
+However, DevBox and HackBox assume they are running under VirtualBox, and, in particular, DevBox
+has the VirtualBox ``guest additions'' pre-installed.\footnote{HackBox does not have the guest
+  additions installed to simplify its kernel configuration.} The guest additions are a
+collection of software components that are loaded into the guest and that streamline the
+operation of the system.\footnote{The term ``guest'' refers to the system running inside the
+  virtual machine. The term ``host'' refers to the system running the virtualization software.}
+
+You may be able to run DevBox and HackBox using some other virtualization product. However, you
+will probably have to do some additional configuration before it will work well. VirtualBox is
+the only virtualization software that is officially supported for use in my operating systems
+class.
+
+To import the virtual appliances into VirtualBox follow the steps below.
+
+\begin{enumerate}
+
+\item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. See my web
+  site for the locations where these files are currently available. The names of the files
+  contain the date when that version was released. I normally release a new version of both VMs
+  shortly before the start of each semester.
+
+\item Start VirtualBox and select ``Import Appliance'' from the File menu. Follow the prompts.
+  This will unpack the OVA file and add the virtual machine to VirtualBox's start menu. Repeat
+  this for both virtual appliance files.
+
+\end{enumerate}
+
+In principle no further configuration is necessary since the configurations of the virtual
+machines are contained in their original OVA files. However you might review the machine
+settings and tweak them if desired. Note especially the amount of memory allocated to the
+virtual machines. \emph{DevBox is configured to use 1.5 GiB of memory and HackBox is configured
+  to use 0.5 GiB of memory. If your host computer has less than 4 GiB of memory you may want to
+  adjust the configured value downward.} If your host computer is well endowed with memory you
+might consider increasing the amount available to the virtual machines. A good rule of thumb is
+to allocate no more than 50\% of your system's physical memory to all virtual machines taken
+together.
+
+After you have imported the appliances you can delete the OVA files to save disk space. However,
+if you have sufficient disk space you might consider keeping the files in case you need to
+reinitialize DevBox or HackBox from scratch. Having the OVA files on hand will save you another
+long download.
+
+It is perfectly reasonable to boot both DevBox and HackBox at the same time; in fact this is
+necessary for the kind of work you'll be doing. Each virtual machine runs in its own window.
+DevBox presents a full graphical desktop; HackBox is console only. The Linux distribution
+running inside both virtual machines is Ubuntu, 64~bit. DevBox is using the desktop version of
+Ubuntu 14.04 and HackBox is using the server version of Ubuntu 14.04.
+
+You will likely have to boot HackBox first if you want the serial consoles to communicate with
+each other properly. This is because HackBox's machine configuration sets up its virtual serial
+port in server mode; DevBox will probably be unable to connect to it unless it already exists
+when DevBox starts. \textit{TODO: Check this!}
+
+Both DevBox and HackBox has a user account named ``student'' with a password of ``frenchfry.''
+You should log in as this user. The student user can use \texttt{sudo bash} to create a root
+shell when necessary.
+
+\section{Snapshots}
+
+One major benefit to doing your development inside a virtual machine is that you can use
+VirtualBox to ``snapshot'' your system just before attempting any kind of dangerous or
+complicated operation. When you create a snapshot VirtualBox remembers the entire state of the
+system. \emph{Any} change made after the snapshot is provisional. If the system becomes corrupt,
+you can just restore to the snapshot and undo all changes made since the snapshot was taken.
+
+The undoing of changes is complete. The process does not rely on the correct operation of the
+guest system. Even if the data on the (virtual) hard disk is totally shredded, restoring to a
+snapshot will reset every detail of the system back to the state it had when the snapshot was
+taken.
+
+With this protection in place you are free to experiment without concern of causing irreparable
+damage. For example, if you want to try building and installing a new version of the C
+library\ldots\ go ahead! Take a snapshot first and if the result is a major disaster you can
+just roll back to where you started and try again. In the worst case scenario you could delete
+your virtual machine and re-import it from the original OVA file. Of course this rolls back all
+changes you ever made to the system but the base configuration will be fully restored.
+
+It is likely you will snapshot HackBox frequently during your work. This is because HackBox will
+be running experimental kernels and kernel modules and is thus subject to random, spectacular
+failures. In contrast DevBox should remain fairly stable since it only runs software blessed by
+Ubuntu and well established third party products. Because of HackBox's minimal configuration,
+snapshots of HackBox should be small and quick to make. This is a nice side effect of using two
+machines in this way.
+
+\section{Basic Testing}
+
+It is nice after installing DevBox and HackBox to do some simple operations to verify that they
+are working for you in a useful way. Keep in mind that none of the steps described in this
+section are necessary for DevBox or HackBox to work. They are only intended to give you an
+opportunity to exercise the system in a relevant manner.
+
+\begin{enumerate}
+
+\item If any virtual machine is running, shut it down. If you are not running VirtualBox, start
+  the VirtualBox application. Either way you should be looking at VirtualBox's window that lists
+  your configured virtual machines, but you should have no virtual machine actually running.
+
+\item In the VirtualBox console select the HackBox virtual machine and take a snapshot of its
+  current state.
+
+\item Boot HackBox. Log in as the user student.
+
+\item Boot DevBox. Log in as the user student. Open a terminal window.
+
+\item Check that you have network connectivity between the two systems. For example, on DevBox
+  issue the command:
+\begin{Verbatim}
+$ ping hackbox
+\end{Verbatim}
+  Run the corresponding command on HackBox to ping DevBox.
+
+  Both virtual machines can communicate across an internal network managed entirely by
+  VirtualBox. They have statically assigned IP addresses (192.168.56.101 for DevBox and
+  192.168.56.102 for HackBox) with appropriate entiries in \texttt{/etc/hosts} allowing the
+  machines to communicate via unqualified names. This ping check allows you to verify that this
+  network connectivity is functional.
+
+  Both virtual machines also have a second network interface defined that connects via a network
+  address translator to the host's physical network interface. This gives both machines access
+  to the Internet for updates and other purposes.
+
+\item On DevBox issue the command:
+\begin{Verbatim}
+$ ssh hackbox
+\end{Verbatim}
+  This should connect to the ssh server on HackBox over the internal network and allow you to
+  log in again as student. You can use the \texttt{scp} command to transfer files between the
+  two systems. Note that DevBox is not running an ssh server so all file transfer commands must
+  be initiated from the DevBox side.
+
+  Once you've demonstrated that ssh is working you can log out.
+
+\item On DevBox issue the command:
+\begin{Verbatim}
+$ minicom
+\end{Verbatim}
+  Both HackBox and DevBox also have virtual serial ports defined. Those ports
+  (\texttt{/dev/ttyS0} in both cases) have been connected together by VirtualBox. HackBox is
+  running a \texttt{getty} process on its ttyS0 serial port to support logins.
+
+  Minicom is a simple terminal program for Linux that can be used to interact with serial ports.
+  After starting minicom you should be able to hit Enter and see a login prompt from HackBox.
+  Try logging in to verify that this works. We will make use of this serial connection for
+  kernel debugging purposes (the network will be non-functional during debugging).
+
+  When you are done experimenting with this, log out of HackBox and then type CTRL+A followed by
+  X in minicom to exit minicom.
+
+\item Check that you are using the correct kernel on HackBox by issuing the command (on
+  HackBox's console):
+\begin{Verbatim}
+$ cat /proc/version
+\end{Verbatim}
+  This command reads a file in the ``magic'' proc file system that, in this case, reports
+  information about the kernel version you are using. It should say 3.18.14. This is the
+  pre-compiled experimental kernel we will be working with.
+
+\item On DevBox use the file manager to browse
+\begin{Verbatim}
+/home/student/linux-3.18.14
+\end{Verbatim}
+  This is the source code for the experimental kernel. You will become familiar with its
+  organization in the future, but a quick look now is a good first step toward that goal.
+
+\item On DevBox in a terminal window change to
+\begin{Verbatim}
+/home/student/linux-3.18.14
+\end{Verbatim}
+  and issue the command \texttt{make menuconfig} to view the kernel configuration menu. The
+  configuration you are looking at is the configuration used the last time the kernel was
+  compiled. It represents the current configuration of the experimental kernel running on
+  HackBox.\footnote{For full details about how to compile Linux, see my companion document
+    \textit{Compiling Linux} on my web site.} Look around to see what kinds of options are
+  available. If you change anything, do \emph{not} save your changes. If you save any changes
+  you will end up doing a full kernel rebuild the next time you try to compile it. That takes a
+  rather long time.
+
+  Once you exit the configuration menu, look at the file \texttt{.config} and the file
+\begin{Verbatim}
+include/generated/autoconf.h
+\end{Verbatim}
+  to see the results of the configuration process. The \texttt{.config} file is used by the
+  kernel build system to control which source files need to be compiled and how. The
+  \texttt{autoconf.h} header is included into source files that need to distinguish between
+  various configuration options.
+
+\item Edit the file \texttt{init/version.c}\footnote{Relative paths are relative to the root of
+    the kernel source tree unless context indicates otherwise.} and change the value of
+  \texttt{linux\_proc\_banner} to include some distinctive text. For example you might add
+  something like ``experimental'' to the existing banner. This will change the contents of
+  \texttt{/proc/version} once the modified kernel is running.
+
+\item Issue the command \texttt{make} at the root of the kernel source tree to build a new
+  kernel reflecting your changes. This should not take too long because the kernel has already
+  been built and \texttt{make} should realize that most of the object files are up to date (even
+  so it can take several minutes to do this). If \texttt{make} appears to be recompiling
+  everything something is wrong (possibly you accidentally saved changes when looking the
+  configuration earlier). In that case just cancel the build and don't worry about this step.
+
+\item Copy the file:
+\begin{Verbatim}
+arch/x86/boot/bzImage
+\end{Verbatim}
+  \emph{to HackBox} and on top of the file:
+\begin{Verbatim}
+/boot/vmlinuz-3.18.14
+\end{Verbatim}
+  on that system. This replaces the boot experimental kernel with the version you just compiled
+  containing your changed banner. It's good practice to make a backup copy of
+  \texttt{vmlinuz-3.18.14} first.
+
+\item Reboot HackBox into the experimental kernel and verify that \texttt{/proc/version} has
+  changed as expected. You can use the command:
+\begin{Verbatim}
+$ sudo shutdown -r now
+\end{Verbatim}
+  to reboot HackBox immediately.
+
+\end{enumerate}
+
+When you are done with the steps above you can shutdown HackBox using a command such as:
+\begin{Verbatim}
+$ sudo shutdown -h now
+\end{Verbatim}
+Here the \texttt{-h} option means ``halt.'' After the system shuts down you can restore to the
+snapshot to undo any changes made during this session and put the system back into its initial
+pristine state. You may find it useful to do this after each experiment.\footnote{Avoid storing
+  anything of importance on HackBox. Use DevBox for all files you wish to keep.}
+
+Although you will be recompiling the kernel in some labs, most of the programming you'll be
+doing will actually be in the form of external kernel modules. These are modules that are not
+part of the normal distribution and that are always loaded dynamically. Details about how to do
+this will be provided in the appropriate lab.
+
+In addition to Linux we will also be experimenting with an operating system written by a team of
+VTC students for their 2008/2009 senior project. That system is called Phoenix. Using Phoenix
+does not require HackBox at all. Instead it runs inside a virtualization product called Bochs
+running inside the DevBox VM (yes, this amounts to a nested virtual machine).
+
+If you wish to try Phoenix to see if it works for you, follow the steps below.
+
+\begin{enumerate}
+
+\item On DevBox change to the \texttt{Phoenix} directory and do:
+\begin{Verbatim}
+$ git pull
+\end{Verbatim}
+  to get the most recent version of Phoenix from GitHub.
+
+\item Type:
+\begin{Verbatim}
+$ source useOW.sh
+\end{Verbatim}
+  to configure the environment of your terminal to make the Open Watcom C/C++ compilers
+  available. You might want to change the title on the terminal to reflect this so you don't
+  forget (use the ``Terminal $\rightarrow$ Set Title'' menu item on the terminal program).
+
+\item Use the \texttt{makeandrun.sh} script in the top level Phoenix folder. That script creates
+  a Phoenix boot disk image containing the system and several sample programs, and then launches
+  Phoenix using the Bochs simulator. Bochs has been configured with debugging features turned on
+  so when it starts it will produce a command prompt. Type ``continue'' to begin the simulation
+  without interruption.
+
+  When Phoenix boots you will be prompted with a menu of programs on the boot disk. Select one
+  of them to see Phoenix in action. You can power off the Bochs simulation (upper right corner
+  of the Bochs window) when you are done. There is no shutdown procedure for Phoenix.
+
+\end{enumerate}
+
+\section{Using KGDB and KDB}
+
+KGDB is a kernel debugger that allows you to connect \texttt{gdb} running on DevBox to the
+kernel running on HackBox. Using this tool is a bit intricate. Here I outline the basic
+procedure. See the class web page for links to additional information.
+
+When you want to use the debugging tools you must log into HackBox by way of a serial terminal.
+Do \emph{not} use SSH and do not use the console. While the HackBox kernel is being debugged the
+network will not function normally. Furthermore the debugger on DevBox has no way to transmit
+data over the console; it needs to use an old style serial port.
+
+\emph{I recommend taking a snapshot of HackBox before your debugging session in case you
+  accidentally trash HackBox during the session!}
+
+On DevBox use the command:
+\begin{Verbatim}
+$ minicom
+\end{Verbatim}
+This command starts the terminal program. It has been preconfigured to connect to
+\texttt{/dev/ttyS0} which is attached to HackBox's serial port of the same name by way of a
+host-level named pipe. You can hit the Enter key to get a login prompt from HackBox.
+
+When you are ready to debug, you must first activate KGDB on HackBox. Use a command such as:
+\begin{Verbatim}
+# echo ttyS0 > \
+   /sys/module/kgdboc/parameters/kgdboc
+\end{Verbatim}
+This informs the KGDB ``over console'' driver that it should use ttyS0 for communication.
+Without this step KGDB will effectively be turned off even if it has been compiled into the
+kernel. Note that this command must be executed at a root shell (using \texttt{sudo} won't
+work).
+
+There are three ways to break into the kernel.
+\begin{enumerate}
+\item If the kernel takes an exception it will stop and wait for the debugger to attach.
+\item You can issue a SysRq-g sequence in the terminal program.
+\item You can echo the letter 'g' into the file \texttt{/proc/\-sysrq-trigger}.
+\end{enumerate}
+
+The second option can be done from minicom by typing Ctrl+Afg. Use the following command to
+execute the third option:
+\begin{Verbatim}
+# echo g > /proc/sysrq-trigger
+\end{Verbatim}
+
+After breaking into the kernel you should see a KDB prompt on your terminal. At this point the
+kernel on HackBox is frozen awaiting your debugging pleasure. You could enter KDB commands, but
+it is generally more interesting to use \texttt{gdb}.
+
+On DevBox in a separate command window, go into the top level of the Linux source tree and use
+the command:
+\begin{Verbatim}
+$ gdb ./vmlinux
+\end{Verbatim}
+This runs the debugger against the previously compiled kernel image. The debugger will use the
+image for symbolic information. Note that you must use the uncompressed kernel image and not
+\texttt{vmlinuz}.
+
+Connect the debugger to the ttyS0 serial port with the following commands:
+\begin{Verbatim}
+(gdb) set serial baud 115200
+(gdb) target remote /dev/ttyS0
+\end{Verbatim}
+
+You can now use \texttt{gdb} debugging commands to debug the HackBox kernel. Note that you will
+see some ``junk'' appearing on the previously opened terminal. They are remote debugging
+protocol packets; you can ignore them.
+
+To return to normal operation first exit \texttt{gdb} with the command:
+\begin{Verbatim}
+(gdb) quit
+\end{Verbatim}
+You will see a message about terminating the remote process. You can say `yes' here (it doesn't
+actually terminate the HackBox kernel). Then, back in the terminal window type:
+\begin{Verbatim}
+$3#33
+\end{Verbatim}
+You won't be able to see the text as you type it. This sequence is a debugging protocol packet
+that tells KDB to return to the prompt. You can then resume normal operation of HackBox by
+issuing the `go' command at the KDB prompt.
+
+\section{Making Backups}
+
+Most recovery operations such as restoring to a snapshot or re-importing the original OVA file
+will entail the lose of some or all of your work. Thus I strongly recommend that you back up
+your work often. This can be done by using a special backup script I created. To use it simply
+execute \texttt{backup} at a command prompt.
+
+It is extremely important to understand that The \texttt{backup} script only archives the files
+in the \texttt{cis-4020} folder. This means the backup archives are relatively small but it also
+means that any files you put elsewhere on the system will not be backed up. \emph{I therefor
+  strongly recommend that you store all course materials in the cis-4020 folder.} Be aware that
+configuration changes you make, for example to the desktop on DevBox, are not backed up.
+
+Once the \texttt{backup} script has created the archive it will ask you if you want to tranfer
+that archive to \texttt{lemuria}. Assuming you have an account on that system you can use
+\texttt{lemuria} as a repository of backups. If you do not transfer the backup file, the script
+will leave it in student's home directory where you can transfer it some other way (for example
+as an email attachment using webmail).
+
+You should definitely transfer the backup archives off the virtual machine. The point of the
+backups are to save your work in case the VM is destroyed. Keeping the backup archives on the VM
+won't help you if you lose the state of the VM itself.
+
+Figure~\ref{fig:sample-backup} shows a sample backup session. Text entered by the user is show
+in an italic font.
+
+\begin{figure*}[t]
+\begin{Verbatim}[fontsize=\small, frame=single, commandchars=\\\{\}]
+student@devbox:~$ \textit{backup}
+1) None
+2) cis-4020
+=> \textit{2}
+Creating backup file for cis-4020...
+Done
+Transfer to lemuria? [y/n] \textit{y}
+Username: \textit{pchapin}
+Password: 
+backup-cis-4020-2015-08-06.tar.gz                             100%   38KB  38.3KB/s   00:00    
+Transfer successful. Removing ~/backup-cis-4020-2015-08-06.tar.gz
+student@devbox:~$
+\end{Verbatim}
+\caption{Sample Backup Session}
+\label{fig:sample-backup}
+\end{figure*}
+
+Another, more elegant way to transfer a course directory to another host is to use the
+\texttt{rsync} program. This program only copies files that have changed and is thus often
+faster than transferring an entire archive (even a compressed archive). The \texttt{rsync}
+program will add and remove files and directories on the target as necessary and, in archive
+mode, it even copies file permissions and date/time information. First move to student's home
+directory. Then do
+\begin{Verbatim}
+$ rsync -vaz --delete -e "ssh -p 22" \
+  cis-4020 username@lemuria.cis.vtc.edu:
+\end{Verbatim}
+
+The \texttt{--delete} option tells \texttt{rsync} to remove files on the target that are not in
+the source. The \texttt{-z} option specifies compressed mode; this is particularly useful if you
+are on a low speed network connection since it will reduce the amount of network traffic
+required. See the \texttt{rsync} manual page for more information.
+
+Note that the \texttt{rsync} command above uses ssh as the underlying transport. Thus you will
+be prompted for your password, yet your password will not appear on the network unencrypted.
+Note also that the \texttt{rsync} command above will create (or update) a \texttt{cis-4020}
+directory beneath your home directory on the remote host.
+
+\section{Shutting Down}
+
+When you are finished using the virtual machines \emph{do not just close the VirtualBox window!}
+Closing VirtualBox is equivalent to pulling the power on a real machine. Instead you should shut
+down the guest operating system properly. On DevBox in the upper right corner of the desktop
+there is a menu with a ``Shutdown'' option. On HackBox, as the root user, issue the command:
+\begin{Verbatim}
+# shutdown -h now
+\end{Verbatim}
+
+Alternatively you can suspend the virtual machine. On the VirtualBox menu (not inside the guest)
+do ``Machine $\rightarrow$ Close\ldots'' In the dialog box that appears select ``Save the
+machine state.'' The next time you start the virtual machine will resume from the saved state.
+This is usually quicker than booting the system from scratch.
+
+\section{Setup Notes}
+
+This section contains some notes on how DevBox and HackBox were initially configured. They are
+intended to be helpful to anyone else who wants to build the systems from scratch rather than
+downloading the preconfigured systems.
+
+\textit{TODO: Finish me!}
+
+\end{document}

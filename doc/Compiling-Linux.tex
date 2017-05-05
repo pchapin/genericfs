@@ -1,0 +1,736 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FILE    : Compiling-Linux.tex
+% AUTHOR  : (C) Copyright 2015 by Peter C. Chapin
+% SUBJECT : Compiling Linux for kernel development..
+%
+% This document describes how to set up a Linux kernel for kernel study and development. It
+% covers how to compile the kernel and how to set up various kernel debugging and code browsing
+% tools.
+%
+% TODO:
+%
+% + See comments in the text.
+%
+% Send comments or bug reports to:
+%
+%       Peter C. Chapin
+%       Computer Information Systems
+%       Vermont Technical College
+%       Williston, VT. 05495
+%       PChapin@vtc.vsc.edu
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ++++++++++++++++++++++++++++++++
+% Preamble and global declarations
+% ++++++++++++++++++++++++++++++++
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{url}
+
+% \pagestyle{headings}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
+
+% ------------
+% New Commands
+% ------------
+
+% Add commands in alphabetical order.
+\newcommand{\command}[1]{\texttt{#1}}
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\newterm}[1]{\textit{#1}}
+\newcommand{\todo}[1]{\textit{TODO: #1}}
+
+% ----------------
+% New Environments
+% ----------------
+
+% An environment to display a sequence of commands.
+\newenvironment{commands}
+  {\begin{quote} \tt}
+  {\end{quote}}
+
+
+% +++++++++++++++++++
+% The document itself
+% +++++++++++++++++++
+\begin{document}
+
+% ----------------------
+% Title page information
+% ----------------------
+\title{Compiling Linux}
+\author{\copyright\ Copyright 2015 by Peter C. Chapin}
+\date{Last Revised: August 6, 2015}
+\maketitle
+
+% -----------------
+% Table of contents
+% -----------------
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+\section*{Legal}
+\label{sec:legal}
+
+\textit{Permission is granted to copy, distribute and/or modify this document under the terms of
+  the GNU Free Documentation License, Version 1.1 or any later version published by the Free
+  Software Foundation; with no Invariant Sections, with no Front-Cover Texts, and with no
+  Back-Cover Texts. A copy of the license is included in the file \texttt{GFDL.txt} distributed
+  with the \LaTeX\ source of this document.}
+
+\section{Introduction}
+
+This document describes how to compile a Linux kernel for study and development. It contains
+specific instructions for compiling an experimental kernel and for configuring various kernel
+debugging and code browsing tools. This document was originally prepared to support the
+operating systems class at Vermont Technical College. Some of the information it contains
+targets that audience. However, much of the contents of this document would be useful to anyone
+interested in studying the Linux kernel.
+
+It is possible to run an experimental kernel on the same system as is being used for
+development. However, this arrangement is not ideal since errors in the experimental kernel may
+cause corruption of the development environment. Ideally, then, one should really configure two
+computers: a development system running a pre-built kernel and where all the programming tools
+execute (compilers, editors, etc), and a system for hacking that runs the experimental kernel
+but is otherwise expendable.
+
+This document describes both single machine and dual machine arrangments. In the text below the
+\newterm{target system} is the system on which you plan to run the experimental kernel. The
+\newterm{development system} is the system where you will do your development work. The
+\newterm{experimental system} is a separate system used only for testing. In a single machine
+configuration the target system and the development system are the same, and there is no
+experimental system. In a dual machine configuration the target system and the experimental
+system are the same.
+
+Additional details about how to set up and use the dual machine configuration as two connected
+virtual machines are in the companion document \textit{DevBox and HackBox}.
+
+\section{Compiling the Kernel}
+
+This section describes how to compile the Linux kernel. It is intended to support individuals
+compiling the kernel for the first time. Note that this section assumes you are using a recent
+(3.x) version of the kernel.
+
+\subsection{Downloading and Unpacking}
+
+Before compiling the kernel you will need to obtain a copy of its source code. Your Linux
+distribution should come with the source code of the kernel (it's required by the GPL). However,
+because the kernel source is large and because most users do not require it, the kernel source
+is not normally installed by default. Furthermore, each distribution tends to specialize the
+kernel in various ways. To build a new kernel from a particular distribution's kernel source
+package, you should consult the documentation for that distribution.
+
+If you are interested in kernel development or if you want to always use the latest kernel, I
+recommend that you download the stock kernel source from \url{http://www.kernel.org/}. This site
+is the official repository for Linux kernels. The kernels there are generic in the sense that
+they haven't been customized for any particular Linux distribution. As a result you may have to
+configure the kernel (as described below) in a non-default way before it will boot your system
+cleanly.
+
+If you are interested in keeping up with the absolute latest version of the kernel you can check
+out its source code from GitHub here \url{https://github.com/torvalds/linux}. This would allow
+you to do your development in your own branch and periodically merge upstream changes into your
+work. It would also allow you to share your work with a team of collaborators. However, using
+Git to do these things is outside the scope of this document.
+
+This document describes the build process specifically for kernel version 3.18.14 on 64~bit
+Ubuntu Linux 14.04 (trusty). The commands below reflect this version number and platform. If
+you are using a different version or building on a different platform, modify the commands as
+appropriate. Note that you may need to install some extra packages on your system in order to do
+kernel development. This document does not describe which packages are necessary nor how to
+install them. Consult the documentation for your distribution for more information.
+
+The kernel source is kept in a compressed archive called a \newterm{tarball}. For version
+3.18.14, the name of this archive is \filename{linux-3.18.14.tar.xz}. The last component of the
+version number is a release level. As 3.18 matures, it advances through several releases.
+
+Once you download the tarball you will need to unpack it somewhere on your development system.
+
+\begin{commands}
+\$ unxz < linux-3.18.14.tar.xz | tar xf -
+\end{commands}
+
+Unpacking the tarball will create a \filename{linux-3.18.14} directory beneath the current
+directory. While doing kernel development it is probably best to unpack the kernel in your home
+directory. That will make it easy for you to do development under your normal user account. You
+will need to be root to install the kernel, but you can build it as an ordinary user.
+
+\subsection{The C Library }
+
+The application interface to the kernel is by way of the C library. In theory when the kernel is
+updated, the C library needs to be rebuilt so that it can take into account any changes in
+kernel-specific data structures provided by the new kernel. Applications that link to the C
+library statically (that is \emph{not} using the dynamic shared library) would also need to be
+recompiled.
+
+In addition some of the header files from the kernel source are usually also in
+\filename{/usr/include} where applications that need them (for example, applications making
+direct system calls) can access them. Again, in theory, when the kernel is updated those header
+files also need to be updated as well.
+
+A Linux distribution installs a version of the C library and kernel headers that correspond to
+the installed kernel. When you update your kernel using the distribution's normal update system,
+these things are also updated if necessary. When you manually update your kernel, however, you
+might have to update these things yourself.
+
+That said, changes in the kernel that necessitate rebuilding the C library are relatively rare.
+If the kernel you are installing is not too different than the one you are already using you can
+probably get away without these additional complications.
+
+Some distributions use symbolic links from \filename{/usr/include} into the kernel source tree.
+In that case, they will install the kernel headers under \filename{/usr/src} for the installed
+kernel even if they do not install the full kernel source. In a case like this you can change
+the symbolic links in \filename{/usr/include} to point at the new headers; however you should in
+theory also rebuild the C library and statically linked applications if you do this.
+
+If this sounds complicated and unreliable you aren't the only person who thinks that. There have
+been discussions among the kernel developers about how to ``fix'' this situation, but at the
+time of this writing I'm not sure how those discussions have concluded.
+
+\subsection{Configuring}
+\label{sec:configuring}
+
+Before you compile the kernel you should \newterm{configure} it. This involves selecting which
+features you want enabled in your kernel and which features should be compiled as modules that
+can be loaded later. The configuration process creates two files: \filename{.config} in the root
+of the kernel source tree and \filename{autoconf.h} in
+\filename{include/generated}.\footnote{The \filename{autoconf.h} file is created as part of the
+  build process. It does not exist until you actually compile the kernel for the first time.}
+The \filename{.config} file gives the make utility access to your desired configuration. Make
+uses this information to control which files are compiled and how. The \filename{autoconf.h}
+file is included into the various kernel source files (and also in external modules) and gives
+the C compiler access to your desired configuration. Programmers can use \#ifdef/\#endif
+directives in the C source to selectively compile different code depending on the configuration
+options chosen.
+
+Your Linux distribution has most likely already created a kernel configuration that is
+compatible with the software environment of that distribution. For example the start-up scripts
+may depend on certain features being enabled in the kernel. Using that configuration as a
+starting point allows you to configure your new kernel to match the existing configuration as
+closely as possible resulting in a minimum of problems.
+
+To create a configuration based on some currently running kernel, you will need to first obtain
+a copy of the configuration file for the that kernel. Depending on how the running kernel was
+configured a compressed version of that file might be in \filename{/proc/config.gz}. My Ubuntu
+14.04 distribution stores a copy of the current configuration in
+\filename{/boot/config-3.16.0-45-generic} where 45 is the current (as of the time of this
+writing) release number of the Ubuntu kernel. You can read the file \filename{/proc/version} to
+find the exact version of the running kernel. That information might be useful for determining
+which configuration file is the most appropriate if there is more than one.
+
+Copy the existing configuration file to the root of your new kernel source tree under the name
+\filename{.config}. Then run the \command{make oldconfig} command to update that configuration
+for use with the new kernel. For example, if you are building a new kernel for your development
+system:
+\begin{commands}
+\$ cp /boot/config-3.16.0-45-generic .config \\
+\$ make oldconfig
+\end{commands}
+
+If you are building a kernel to run on an experimental system you should create a
+\filename{.config} that is suitable for that system. Thus instead of copying the existing
+configuration of the development system, you should instead take it from the experimental
+system.
+
+There are two kinds of issues that will be reported by the \command{make oldconfig} command.
+First, configuration options in the existing kernel that are not in the new kernel (because they
+have been removed or renamed, or because the existing kernel has been extended by the
+distribution) produce warnings when they can't be mapped into the new configuration. Second,
+configuration options in the new kernel that are not in the existing kernel (because they are
+new) will prompt you to choose between `Y' (meaning compile the feature into the kernel), `N'
+(meaning don't compile the feature), or in some cases `M' (meaning compile the feature as a
+module). In general you can just hit `enter' to accept the default in most cases.\footnote{You
+  can also select `?' to get help information about an option.}
+
+After the initial configuration process is complete you can use:
+\begin{commands}
+\$ make menuconfig
+\end{commands}
+OR
+\begin{commands}
+\$ make gconfig
+\end{commands}
+
+to further refine the configuration. You can also use these commands to change the configuration
+later if desired. Note that \command{make menuconfig} requires that you have the curses terminal
+handling library available and \command{make gconfig} requires that you be running the X Window
+system with the GTK+ graphical libraries available.
+
+\textit{Warning!} If you modify the configuration with either of the commands above you will
+need to do a full kernel rebuild. This takes a long time so if you aren't prepared to do that be
+careful not to accidentally change anything when just reading the configuration.
+
+If you are building a kernel for experimentation purposes you may want to enable some debugging
+features in the kernel configuration. I invite you to explore the options under the ``Kernel
+hacking'' heading. Even if you decide to not activate any debugging features at this time it
+would be good for you to be aware of the possibilities in case you want to try them later.
+
+Note that debugging features, and the checks they imply, will impact the performance of your
+kernel in terms of both space and time. This is why many of them are off by default. In fact,
+some checks are so expensive that I do not recommend using them in a kernel built for general
+use (although they may be acceptable on the experimental system). Consult the help information
+on each option for more information.
+
+If you wish to debug your kernel using a source level debugger you will want ``Compile the
+kernel with debug info'' turned on (this is the default in the Ubuntu 14.04 configuration). Be
+aware that this option greatly increases the amount of disk space required to build the kernel
+since every object file produced by the compiler contains debugging symbols.\footnote{Several
+  gigabytes of disk space are required for a full build using debugging.} This option is
+appropriate if you are creating a User Mode Linux kernel (see Section~\ref{sec:UML}) or if you
+plan to use a kernel debugger or a tool to analyze kernel crash dumps.
+
+If you are building a kernel for use on an experimental system, and you wish to debug it
+remotely using KGDB, you will want to enable KGDB support in the kernel configuration (this is
+also the default in the Ubuntu 14.04 configuration). I say more about setting up and using KGDB
+in the companion document \textit{DevBox and HackBox}.
+
+\subsection{Building}
+\label{sec:building}
+
+To actually build the kernel and all of its supporting modules do:
+\begin{commands}
+\$ make
+\end{commands}
+
+A kernel build takes some time. There is a lot of code. Note that this will compile most drivers
+(as modules) even though your system will likely never use them. Nevertheless you may find some
+drivers useful, especially in an experimental context, so it doesn't hurt to build them all.
+
+\subsection{Installing}
+
+You do not need to be root to configure and compile the kernel. If you unpack the kernel source
+in an area where you have read/write permission, you should be able to build it as an ordinary
+user. However, you do need to be root to copy the new kernel to a place where it can be used to
+boot a machine.
+
+Once the kernel has been built you should first copy the various modules that were built to the
+proper directory under \filename{/lib/modules} so that the running kernel can find them. This is
+accomplished by doing:
+\begin{commands}
+\# make INSTALL\_MOD\_STRIP=1 modules\_install
+\end{commands}
+
+The INSTALL\_MOD\_STRIP option removes debugging information from the modules as they are
+installed. This greatly reduces the amount of disk space used by the module library and by the
+initial RAM disk (described below). In low memory systems saving memory can be essential since
+the full module library, with debugging information included, is very large. You may be
+motivated to configure your experimental system with a minimal amount of memory since it won't
+be used for any ``real'' work. As a result, without striping the modules, it is likely that the
+initial RAM disk will be too large for a minimally configured system to use.
+
+You should install modules even on your development system because the module library of a
+kernel is used during the compilation of external modules for that kernel. However, it is safe
+to install modules for a kernel even if you usually run a different kernel. Each kernel has its
+own private directory under \filename{/lib/modules}.
+
+If plan to run your new kernel on an experimental system you should also copy the modules to
+that system where they can be used. On the development system, after installing modules, do the
+following:
+\begin{commands}
+\# cd /lib/modules \\
+\# tar cf - 3.18.4 | gzip > modules-3.18.14.tar.gz
+\end{commands}
+
+Then transfer \filename{modules-3.18.14.tar.gz} to the experimental system and unpack it there
+using:
+\begin{commands}
+\# cd /lib/modules \\
+\# gunzip < modules-3.18.14.tar.gz | tar xf -
+\end{commands}
+
+You should next copy and rename three files from your freshly built kernel to the
+\filename{/boot} directory on the target system. For example, if you plan to run the new kernel
+on the development system (with paths relative to the root of the kernel source tree):
+\begin{commands}
+\# cp arch/x86/boot/bzImage /boot/vmlinuz-3.18.14 \\
+\# cp .config /boot/config-3.18.14 \\
+\# cp System.map /boot/System.map-3.18.14
+\end{commands}
+
+The \filename{System.map} file contains a list of all symbols in the kernel and their
+corresponding addresses. This can be useful for debugging and for interpreting stack traces in
+kernel oops messages. \todo{why is it important for this file to be in \filename{/boot}?}
+
+If you prepared a kernel for a separate experimental system you should instead transfer the
+files to that system and install them in the \filename{/boot} directory there. In that case you
+should \emph{not} install them to the \filename{/boot} directory of the development system since
+they will likely (and undesirably) be incorporated into the boot sequence the next time your
+distribution pushes a kernel update.
+
+Finally I recommend using \command{ls -l} in the \filename{/boot} directory to check file
+ownership and permissions. Use the \command{chown} and \command{chmod} commands as appropriate
+to match the owners and permissions on the new files to those of the existing files. While this
+is not an essential step, it gives the installation a clean look and it may have importance from
+a system security point of view.
+
+
+\subsubsection{Making \filename{initrd}}
+
+Because modern Linux systems are so highly modularized it is possible that the kernel will need
+to load a module in order to read the file system. This creates a problem: how can it load a
+file system support module from the file system? To get around this, Linux boots in two phases.
+During the first phase the boot loader loads a pre-defined RAM disk image into memory along with
+the kernel. The kernel uses this RAM disk image as it's initial root file system. Certain
+programs and kernel modules can be loaded out of this RAM disk image. Once that is done, the
+root file system is changed to be the normal hard disk and the usual start-up scripts are
+executed.
+
+Manually creating this initial RAM disk is a somewhat involved procedure. Fortunately there is
+utility program named \command{mkinitramfs} that does most of the work. On a Ubuntu system the
+command is:
+\begin{commands}
+\# mkinitramfs -o /boot/initrd.img-3.18.14 3.18.14
+\end{commands}
+
+This creates a RAM disk using the same modules as in the existing configuration, except that it
+will use the modules for the right kernel version. If you attempt to use the old RAM disk, it
+will contain modules for the old kernel which won't load into the new kernel.
+
+You should run this command on the target system where you plan to run the new kernel. Be sure
+you have the module library installed on that system, and be sure the new kernel configuration
+file is also installed in \filename{/boot}. The \command{mkinitramfs} command makes use of both
+of those resources.
+
+\subsubsection{Configuring GRUB}
+
+Once you have \filename{vmlinuz-3.18.14} and \filename{initrd.img-3.18.14} in the
+\filename{/boot} directory of your target system you only need to update your boot loader to
+provide an option to boot the new kernel. This can be done by cloning the information for the
+existing kernel to a new menu entry and modify the names of the kernel image file and RAM disk
+file. The precise steps for doing this will depend on the boot loader you use.
+
+On a Ubuntu system this is easily accomplished by using the \command{update-grub} command. This
+command searches \filename{/boot} for kernels installed there and composes a suitable GRUB menu
+for them.
+
+The next time you boot your system if you press the left-hand shift key early in the boot
+process you will see the GRUB boot menu. From there you can select your new kernel. \todo{Say
+  more about setting up GRUB options.}
+
+\subsubsection{Installing on Floppy}
+
+\textit{This section is old needs to be rewritten. For one thing it needs to explain how to
+handle the initial RAM disk. For a second thing it should probably really talk about setting up
+a flash drive instead of a floppy (who has floppy drives?).}
+
+The following instructions pertain to users who are booting Linux from a floppy disk. Note that
+this is not the normal configuration (although it is sometimes useful in lab situations).
+
+\begin{enumerate}
+
+\item Make a copy of your boot floppy. Never overwrite a known working kernel with one that you
+  just compiled! First make a backup of the working kernel and be sure that you can boot the
+  working kernel if necessary.
+
+  On Windows you can backup your boot floppy with the \command{diskcopy} command. Open a Windows
+  command prompt and do:
+  \begin{commands}
+    C:$\backslash$> diskcopy a: a:
+  \end{commands}
+
+  You will be prompted for the source disk and then for the target disk. Note that you can't
+  just copy the files from one disk to another! A boot floppy contains special information in
+  the boot sector that will not be copied by the usual file copying operations.
+
+  On Linux you can use the \command{dd} command to copy disks raw. Insert the source floppy and
+  do:
+  \begin{commands}
+    \# dd if=/dev/fd0 of=/tmp/floppy.img bs=1024
+  \end{commands}
+
+  Then insert the target floppy and do:
+  \begin{commands}
+    \# dd if=/tmp/floppy.img of=/dev/fd0 bs=1024
+  \end{commands}
+
+  You can remove the temporary file afterward if you wish. See the manual page for the
+  \command{dd} command for more information.
+
+\item Next insert the boot floppy where you want the new kernel to go and mount it. This can be
+  done with a command such as:
+  \begin{commands}
+    \# mount /dev/fd0 /mnt/floppy
+  \end{commands}
+
+  Use whatever directory is most appropriate if \filename{/mnt/floppy} is not available (there
+  should be a \filename{/mnt} directory at least).
+
+\item Copy \filename{arch/x86/boot/bzImage} to \filename{/mnt/floppy}, renaming it to
+  \filename{vmlinuz} in the process. This will overwrite the \filename{vmlinuz} on the floppy
+  with the new kernel.
+
+  There are some control files on the floppy as well that you could edit. However, if you use
+  the same name (and you might as well since the floppy isn't big enough to hold both kernel
+  images) the control files should already be configured properly.
+
+\item \emph{Very Important!} Unmount the floppy before physically removing it. This is necessary
+  because Linux keeps disk blocks in its cache even for floppy disks. This means that the entire
+  file isn't actually put on the floppy until you unmount it.
+  \begin{commands}
+    \# umount /mnt/floppy
+  \end{commands}
+
+\end{enumerate}
+
+Now you can reboot the machine from your new boot floppy to check your new kernel.
+
+\section{User Mode Linux}
+\label{sec:UML}
+
+Setting up a completely independent experimental system is a nice way to do kernel development.
+However, there are times when it may not be desirable. For example, you might want to do kernel
+development on a machine that you depend on for your normal work and yet not want to risk
+running an experimental kernel directly on that system. One option is to use virtualization
+software to create a virtual machine for a separate experimental system (as described in
+\textit{DevBox and HackBox}). However, if your primary machine is also running Linux, another
+approach is using User Mode Linux (UML).
+
+The Linux kernel is cross platform and with suitable cross compilers can be compiled on one
+platform for execution on another. User Mode Linux is treated as a special ``platform.''
+However, the UML kernel runs on top of a host Linux system as an ordinary process. All access to
+hardware is translated into system calls made against the host system. UML thus allows you to
+run a custom Linux kernel alongside your regular applications. You don't even need to be root on
+the host system.
+
+Another advantage to UML from a kernel development point of view is that it allows you to debug
+the kernel using an ordinary source level debugger such as \command{gdb} without the
+complexities of setting up a separate machine and remote debugging. I will discuss how to do
+this in more detail later in this document.
+
+\subsection{Compiling UML}
+
+The procedure for compiling the User Mode Linux kernel itself is simple. In what follows I will
+assume you are using a 3.x kernel. The 3.x kernel comes with UML as one of the officially
+supported architectures. First, unpack the kernel source code to a suitable working directory.
+Next run the command:
+\begin{commands}
+  \$ make defconfig ARCH=um
+\end{commands}
+
+It is important to use the default configuration generated by \command{defconfig} as the
+starting point for your kernel configuration. \emph{Do not try to use the configuration of the
+  running kernel.} It is also important to add the \command{ARCH=um} option to the command line.
+This tells the build system that you are cross compiling to a different architecture.
+
+Next run either:
+\begin{commands}
+  \$ make menuconfig ARCH=um
+\end{commands}
+OR
+\begin{commands}
+  \$ make gconfig ARCH=um
+\end{commands}
+
+It is important to consistently use the architecture specifier.
+
+Under ``UML Specific Options'' be sure that ``Host filesystem'' is selected. This will allow the
+UML kernel to access the file system of the host; an easy way to share files between the host
+and a running UML system. Under the ``Kernel hacking'' option (on the top level menu) be sure
+the ``Compile the kernel with debug info'' and the ``Compile the kernel with frame pointers''
+options are both selected. These options make it possible to properly debug the UML kernel with
+\command{gdb}. You may or may not want to set some other debugging related options. Save these
+changes.
+
+You are now ready to build the kernel using the command:
+\begin{commands}
+  \$ make ARCH=um
+\end{commands}
+
+When the build is complete you will have an ordinary executable file named \command{linux} in
+the root directory of the source tree. Before you can use it, you will need a root file system.
+
+\subsection{UML Root File System}
+
+User Mode Linux reads its root file system out of a file in the host's file system. This file
+must be set up so that it contains all the normal programs and tools Linux needs to boot. You
+may also want development tools or other programs inside your UML's root file system. Although
+you may be able to download a root file system, matching the root file system with the precise
+kernel version and options you want to use can be tricky. The reason for this is that during the
+boot process, typical Linux configurations read various modules out of the root file system to
+enable support for features needed by the startup scripts. These modules must be compatible with
+the running kernel. If you are using a kernel version that is not compatible, the boot process
+is likely to fail, or at the very least report a large number of errors.
+
+Sometimes you can download a UML kernel along with a matching root file system. However, as a
+kernel developer, the kernel you want to use is not arbitrary; it is a specially configured
+kernel of your choosing. As a consequence of this, the ideal path is to build your own custom
+root file system for kernel development. The procedure is as follows.
+
+\todo{FINISH ME! The description below is very incomplete.}
+
+\begin{enumerate}
+
+\item Create a file to hold the root file system. This file may need to be rather large,
+  depending on how much material you plan to install into the UML environment. Use a command
+  such as:
+  \begin{commands}
+    \$ dd if=/dev/zero of=root\_fs bs=1M count=512
+  \end{commands}
+
+  This command creates a file named \filename{root\_fs} with a size of 512 megabytes. This file
+  is initially all zeros. It will be treated as raw disk image.
+
+\item The image created above must then be formatted with a suitable file system.
+  \begin{commands}
+    \$ mk2efs -j root\_fs
+  \end{commands}
+
+  This command creates an ext3 file system (which is the same as an ext2 file system with a
+  journal created by the \command{-j} option) inside the \filename{root\_fs} file. You may need
+  to specify the path to the \command{mk2efs} program; it is typically not in the path of
+  ordinary users. The use of ext3, or some other journaled file system, is recommended. Since
+  this environment will be used for kernel development, kernel crashes are likely and it is nice
+  to have the extra safety inherent in using a journaled file system.
+
+\item Mount the root file system so that you can access its contents. To do this you will need
+  to be the root user. First create a suitable mount point. I suggest an empty directory named
+  \filename{root}. Then issue:
+  \begin{commands}
+    \$ mount -o loop root\_fs root
+  \end{commands}
+
+  This command uses the loop back driver (which must be supported in your host kernel) to mount
+  the file system contained in \filename{root\_fs} onto the mount point \filename{root}.
+
+\item You will now find an empty partition beneath the mount point, ready for you to set up your
+  root file system. Configuring a root file system for use with Linux is a non-trivial exercise.
+  Lack of space in this document prevents me from going into the details here. Please refer to
+  other documentation for more information.
+
+\item Once the root file system is ready you should (as the root user) unmount it before you try
+  to use it with UML.
+  \begin{commands}
+    \$ umount root
+  \end{commands}
+
+  You might want to make a backup copy, perhaps in compressed form, of your fresh root file
+  system in case you destroy your working copy while setting up UML or doing kernel development.
+
+\end{enumerate}
+
+\subsection{Running UML}
+
+Make sure the root file system is named \filename{root\_fs}. Execute \command{linux} to boot
+User Mode Linux.\footnote{You can name the root file system something else, in which case you
+  need to add the \texttt{ubd0=} boot option to the command line to specify it.} Log in as the
+user root. Typically, depending on the root file system you are using, the password will either
+be blank or also root.
+
+Once you have logged in you can use the command:
+\begin{commands}
+  \# mount none /mnt -t hostfs
+\end{commands}
+to mount the root of the host file system onto the \filename{/mnt} directory inside the UML
+environment. This allows you to copy files to and from the host file system. You may now use
+User Mode Linux in a manner very much the same as any other Linux system.
+
+\todo{Talk about setting up disk partitions under UML.}
+
+To debug the running UML process, open another window on the host machine. Use a command such
+as:
+\begin{commands}
+  \$ ps aux | grep linux
+\end{commands}
+to search for information about the running UML process. You will find several entries because
+UML is a multi-threaded application. Note the process ID of the first entry. Then launch the
+\command{gdb} debugger, attaching \command{gdb} to the process of interest. For example:
+\begin{commands}
+  \$ gdb linux 1234
+\end{commands}
+where 1234 is the process ID of the running UML system.
+
+Once \command{gdb} has started you will want to execute the command \command{handle SIGUSR1
+  nostop noprint}. I'm not entirely sure what this command does exactly but it has something to
+do with the way \command{gdb} deals with multiple threads. In particular, without this command
+\command{gdb} will stop the UML system frequently because of SIGUSR1 signals.
+
+Notice that when \command{gdb} attaches to a process, that process is stopped. Your UML session
+will appear dead. However, by issuing the \command{continue} command to \command{gdb} you can
+cause your UML session to resume normally. Use \^C in the \command{gdb} window to interrupt the
+UML session at any time. You can now set break points and single step the Linux kernel as you
+might any other process.
+
+\todo{Talk about how to set a break point inside a module.}
+
+\section{Code Browsing Tools}
+\label{sec:code-browsing}
+
+The Linux kernel is very large and finding one's way around in it can be a major chore. To
+simplify the navigation of large programs there exists a number of code browsing tools. I
+recommend using one or more of these tools when working with the Linux kernel source. In this
+section I talk about how to configure a few of these tools for use with the Linux kernel.
+
+Note that you should only set up code browsing tools \emph{after} you've applied any patches to
+the source code. Patches will, of course, modify files and change the line numbers were
+functions are defined, etc. If you index the source and then apply patches you will want to
+reindex the source afterward. However, it shouldn't matter if you've compiled the kernel first
+or not. Code browsing tools are normally smart enough to ignore object files.
+
+\subsection{Cscope}
+
+The \command{cscope} tool is a simple but effective code browser with a long history. It reads a
+collection of C files and builds an indexed database that can be used to quickly look up
+declarations and points-of-use for any symbol.
+
+The script below launches \command{cscope} on the Linux kernel. You should edit the three
+variable definitions at the top of the script to suite your system. The script does not index
+the entire kernel code base. In particular it skips the driver hierarchy and only indexes the
+x86 architecturally specific code. This makes the database size more manageable and reduces the
+number of duplicate declarations the tool returns.
+
+\begin{verbatim}
+#!/bin/bash
+
+# Set a few variables. Change here for your system.
+CSCOPE_DIR=/home/student/cscope
+CSCOPE_FILE=$CSCOPE_DIR/cscope.files
+LNX=/home/peter/Linux/linux-3.18.14
+
+# If the database hasn't yet been created, then create it.
+if [ ! -f $CSCOPE_FILE ]; then
+
+  # Build file list. Exclude uninteresting regions.
+  cd ~
+  find $LNX \
+    -path "$LNX/arch/*" ! -path "$LNX/arch/x86*" -prune -o \
+    -path "$LNX/Documentation*" -prune -o \
+    -path "$LNX/scripts*" -prune -o \
+    -path "$LNX/tools*" -prune -o \
+    -path "$LNX/drivers*" -prune -o \
+    -name "*.[chxsS]" -print > $CSCOPE_FILE
+
+  echo Creating database...
+  cd $CSCOPE_DIR
+  cscope -b -q -k
+
+  echo Creating tags...
+  ctags -L $CSCOPE_FILE
+
+fi
+
+# Run cscope
+cd $CSCOPE_DIR
+cscope -d
+\end{verbatim}
+
+In addition to using a dedicated code browsing tool, many programmer's text editors have a
+feature that allows them to read a ``tags'' file containing cross reference information about
+entities declared and defined in a program. The script above uses the \command{ctags} command to
+create such a file for the \command{vim} editor.
+
+It is natural to create a tags file for your editor at the same time as you create the
+\command{cscope} database. This is because \command{cscope} will launch your editor
+(\command{vim} is the default) whenever you ask it to display a file. Once in the editor it is
+convenient to continue your browsing experience using editor tags commands.
+
+If you are an \command{emacs} user instead, you can create a tags file for that editor with the
+\command{etags} command. Set the EDITOR environment variable to \command{emacs} to override
+\command{cscope}'s default editor setting.
+
+\todo{FINISH ME! Need to talk about how to use \command{cscope} and the tags file.}
+
+\end{document}
