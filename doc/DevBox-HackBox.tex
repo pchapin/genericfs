@@ -9,7 +9,7 @@
 %       Computer Information Systems
 %       Vermont Technical College
 %       Randolph Center, VT. 05061
-%       PChapin@vtc.vsc.edu
+%       pchapin@vtc.edu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ++++++++++++++++++++++++++++++++
@@ -34,8 +34,8 @@
 % Title page information
 % ----------------------
 \title{DevBox and HackBox}
-\author{\copyright\ Copyright 2016 by Peter C. Chapin}
-\date{Last Revised: August 8, 2016}
+\author{\copyright\ Copyright 2017 by Peter C. Chapin}
+\date{Last Revised: August 24, 2017}
 \maketitle
 
 \tableofcontents
@@ -66,13 +66,13 @@ using the systems.
 
 \section{Installing VirtualBox}
 
-The lab machines should already have the VirtualBox VM software installed. If you are using a
-lab machine you can skip this section and continue with Section~\ref{sec:booting-guests}. If you
-intend to run DevBox and HackBox on your personal machine you will need to first install
-VirtualBox on your system.
+The lab machines at Vermont Technical College should already have the VirtualBox software
+installed. If you are using a lab machine you can skip this section and continue with
+Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on your personal
+machine you will need to first install VirtualBox on your system.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
-personal machine you should be sure you have at least 4 GiB of memory and at least 50 GiB of
+personal machine you should be sure you have at least 6 GiB of memory and at least 50 GiB of
 free disk space. You also need to have hardware virtualization support turned on in the BIOS of
 your host computer. Most new machines come with this feature turned on by default. Older
 machines may require you to enter the BIOS and activate this feature. If your machine is very
@@ -96,9 +96,9 @@ to install that as well.
 \label{sec:booting-guests}
 
 DevBox and HackBox are distributed as virtual appliances. This is a standard file format that
-includes not only the virtual hard disk (compressed) but also the virtual machine's initial
+includes not only the virtual hard disk (compressed) but also the virtual machine's
 configuration. Once you import the virtual appliance into your virtualization software you can
-boot a virtual machine by just starting it as you might start a real computer. 
+boot a virtual machine by just starting it as you might start a real computer.
 
 The virtual appliance file format is accepted by several different virtualization products.
 However, DevBox and HackBox assume they are running under VirtualBox, and, in particular, DevBox
@@ -131,12 +131,12 @@ To import the virtual appliances into VirtualBox follow the steps below.
 In principle no further configuration is necessary since the configurations of the virtual
 machines are contained in their original OVA files. However you might review the machine
 settings and tweak them if desired. Note especially the amount of memory allocated to the
-virtual machines. \emph{DevBox is configured to use 1.5 GiB of memory and HackBox is configured
-  to use 0.5 GiB of memory. If your host computer has less than 4 GiB of memory you may want to
+virtual machines. \emph{DevBox is configured to use 2.0 GiB of memory and HackBox is configured
+  to use 0.5 GiB of memory. If your host computer has less than 6 GiB of memory you may want to
   adjust the configured value downward.} If your host computer is well endowed with memory you
 might consider increasing the amount available to the virtual machines. A good rule of thumb is
-to allocate no more than 50\% of your system's physical memory to all virtual machines taken
-together.
+to allocate no more than 50\% of your system's physical memory to \emph{all} virtual machines
+taken together.
 
 After you have imported the appliances you can delete the OVA files to save disk space. However,
 if you have sufficient disk space you might consider keeping the files in case you need to
@@ -144,10 +144,10 @@ reinitialize DevBox or HackBox from scratch. Having the OVA files on hand will s
 long download.
 
 It is perfectly reasonable to boot both DevBox and HackBox at the same time; in fact this is
-necessary for the kind of work you'll be doing. Each virtual machine runs in its own window.
-DevBox presents a full graphical desktop; HackBox is console only. The Linux distribution
-running inside both virtual machines is Ubuntu, 64~bit. DevBox is using the desktop version of
-Ubuntu 14.04 and HackBox is using the server version of Ubuntu 14.04.
+often necessary for the kind of work you'll be doing. Each virtual machine runs in its own
+window. DevBox presents a full graphical desktop; HackBox is console only. The Linux
+distribution running inside both virtual machines is Ubuntu, 64~bit. DevBox is using the desktop
+version of Ubuntu 16.04 and HackBox is using the server version of Ubuntu 16.04.
 
 You will likely have to boot HackBox first if you want the serial consoles to communicate with
 each other properly. This is because HackBox's machine configuration sets up its virtual serial
@@ -195,8 +195,9 @@ opportunity to exercise the system in a relevant manner.
 \begin{enumerate}
 
 \item If any virtual machine is running, shut it down. If you are not running VirtualBox, start
-  the VirtualBox application. Either way you should be looking at VirtualBox's window that lists
-  your configured virtual machines, but you should have no virtual machine actually running.
+  the VirtualBox application. Either way, at this point, you should be looking at VirtualBox's
+  window that lists your configured virtual machines, but you should have no virtual machine
+  actually running.
 
 \item In the VirtualBox console select the HackBox virtual machine and take a snapshot of its
   current state.
@@ -260,23 +261,23 @@ $ cat /proc/version
 
 \item On DevBox use the file manager to browse
 \begin{Verbatim}
-/home/student/linux-3.18.14
+/home/student/linux-4.12.8
 \end{Verbatim}
   This is the source code for the experimental kernel. You will become familiar with its
   organization in the future, but a quick look now is a good first step toward that goal.
 
 \item On DevBox in a terminal window change to
 \begin{Verbatim}
-/home/student/linux-3.18.14
+/home/student/linux-4.12.8
 \end{Verbatim}
   and issue the command \texttt{make menuconfig} to view the kernel configuration menu. The
   configuration you are looking at is the configuration used the last time the kernel was
   compiled. It represents the current configuration of the experimental kernel running on
   HackBox.\footnote{For full details about how to compile Linux, see my companion document
-    \textit{Compiling Linux} on my web site.} Look around to see what kinds of options are
-  available. If you change anything, do \emph{not} save your changes. If you save any changes
-  you will end up doing a full kernel rebuild the next time you try to compile it. That takes a
-  rather long time.
+    \textit{Compiling Linux} in the same repository where you found this document.} Look around
+  to see what kinds of options are available. If you change anything, do \emph{not} save your
+  changes. If you save any changes you will end up doing a full kernel rebuild the next time you
+  try to compile it. That takes a very long time.
 
   Once you exit the configuration menu, look at the file \texttt{.config} and the file
 \begin{Verbatim}
@@ -306,11 +307,11 @@ arch/x86/boot/bzImage
 \end{Verbatim}
   \emph{to HackBox} and on top of the file:
 \begin{Verbatim}
-/boot/vmlinuz-3.18.14
+/boot/vmlinuz-4.12.8
 \end{Verbatim}
   on that system. This replaces the boot experimental kernel with the version you just compiled
   containing your changed banner. It's good practice to make a backup copy of
-  \texttt{vmlinuz-3.18.14} first.
+  \texttt{vmlinuz-4.12.8} first.
 
 \item Reboot HackBox into the experimental kernel and verify that \texttt{/proc/version} has
   changed as expected. You can use the command:
@@ -488,8 +489,8 @@ Done
 Transfer to lemuria? [y/n] \textit{y}
 Username: \textit{pchapin}
 Password: 
-backup-cis-4020-2015-08-06.tar.gz                             100%   38KB  38.3KB/s   00:00    
-Transfer successful. Removing ~/backup-cis-4020-2015-08-06.tar.gz
+backup-cis-4020-2017-08-25.tar.gz                             100%   38KB  38.3KB/s   00:00    
+Transfer successful. Removing ~/backup-cis-4020-2017-08-25.tar.gz
 student@devbox:~$
 \end{Verbatim}
 \caption{Sample Backup Session}
@@ -503,7 +504,7 @@ program will add and remove files and directories on the target as necessary and
 mode, it even copies file permissions and date/time information. First move to student's home
 directory. Then do
 \begin{Verbatim}
-$ rsync -vaz --delete -e "ssh -p 22" \
+$ rsync -vaz --delete -e "ssh -p 2221" \
   cis-4020 username@lemuria.cis.vtc.edu:
 \end{Verbatim}
 

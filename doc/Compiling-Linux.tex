@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : Compiling-Linux.tex
-% AUTHOR  : (C) Copyright 2015 by Peter C. Chapin
+% AUTHOR  : (C) Copyright 2017 by Peter C. Chapin
 % SUBJECT : Compiling Linux for kernel development..
 %
 % This document describes how to set up a Linux kernel for kernel study and development. It
@@ -17,7 +17,7 @@
 %       Computer Information Systems
 %       Vermont Technical College
 %       Williston, VT. 05495
-%       PChapin@vtc.vsc.edu
+%       peter@pchapin.org
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ++++++++++++++++++++++++++++++++
@@ -61,8 +61,8 @@
 % Title page information
 % ----------------------
 \title{Compiling Linux}
-\author{\copyright\ Copyright 2015 by Peter C. Chapin}
-\date{Last Revised: August 6, 2015}
+\author{\copyright\ Copyright 2017 by Peter C. Chapin}
+\date{Last Revised: August 24, 2017}
 \maketitle
 
 % -----------------
@@ -107,13 +107,14 @@ experimental system. In a dual machine configuration the target system and the e
 system are the same.
 
 Additional details about how to set up and use the dual machine configuration as two connected
-virtual machines are in the companion document \textit{DevBox and HackBox}.
+virtual machines are in the companion document \textit{DevBox and HackBox} in the same
+repository as where you found this document.
 
 \section{Compiling the Kernel}
 
 This section describes how to compile the Linux kernel. It is intended to support individuals
 compiling the kernel for the first time. Note that this section assumes you are using a recent
-(3.x) version of the kernel.
+(4.x) version of the kernel.
 
 \subsection{Downloading and Unpacking}
 
@@ -137,27 +138,28 @@ you to do your development in your own branch and periodically merge upstream ch
 work. It would also allow you to share your work with a team of collaborators. However, using
 Git to do these things is outside the scope of this document.
 
-This document describes the build process specifically for kernel version 3.18.14 on 64~bit
-Ubuntu Linux 14.04 (trusty). The commands below reflect this version number and platform. If
-you are using a different version or building on a different platform, modify the commands as
-appropriate. Note that you may need to install some extra packages on your system in order to do
-kernel development. This document does not describe which packages are necessary nor how to
-install them. Consult the documentation for your distribution for more information.
+This document describes the build process specifically for kernel version 4.12.8 on 64~bit Ubuntu
+Linux 16.04. The commands below reflect this version number and platform. If you are using a
+different version or building on a different platform, modify the commands as appropriate. Note
+that you may need to install some extra packages on your system in order to do kernel
+development. This document does not describe which packages are necessary nor how to install
+them. Consult the documentation for your distribution for more information.
 
 The kernel source is kept in a compressed archive called a \newterm{tarball}. For version
-3.18.14, the name of this archive is \filename{linux-3.18.14.tar.xz}. The last component of the
-version number is a release level. As 3.18 matures, it advances through several releases.
+4.12.8, the name of this archive is \filename{linux-4.12.8.tar.xz}. The last component of the
+version number is a release level. As 4.12 matures, it advances through several releases.
 
 Once you download the tarball you will need to unpack it somewhere on your development system.
 
 \begin{commands}
-\$ unxz < linux-3.18.14.tar.xz | tar xf -
+\$ unxz < linux-4.12.8.tar.xz | tar xf -
 \end{commands}
 
-Unpacking the tarball will create a \filename{linux-3.18.14} directory beneath the current
+Unpacking the tarball will create a \filename{linux-4.12.8} directory beneath the current
 directory. While doing kernel development it is probably best to unpack the kernel in your home
 directory. That will make it easy for you to do development under your normal user account. You
-will need to be root to install the kernel, but you can build it as an ordinary user.
+will need to be root to install the kernel, but you can configure and build it as an ordinary
+user.
 
 \subsection{The C Library }
 
@@ -167,7 +169,7 @@ kernel-specific data structures provided by the new kernel. Applications that li
 library statically (that is \emph{not} using the dynamic shared library) would also need to be
 recompiled.
 
-In addition some of the header files from the kernel source are usually also in
+In addition, some of the header files from the kernel source are usually also in
 \filename{/usr/include} where applications that need them (for example, applications making
 direct system calls) can access them. Again, in theory, when the kernel is updated those header
 files also need to be updated as well.
@@ -178,8 +180,8 @@ these things are also updated if necessary. When you manually update your kernel
 might have to update these things yourself.
 
 That said, changes in the kernel that necessitate rebuilding the C library are relatively rare.
-If the kernel you are installing is not too different than the one you are already using you can
-probably get away without these additional complications.
+If the kernel you are installing is not too different than the one you are already using, you
+can probably get away without these additional complications.
 
 Some distributions use symbolic links from \filename{/usr/include} into the kernel source tree.
 In that case, they will install the kernel headers under \filename{/usr/src} for the installed
@@ -216,8 +218,8 @@ closely as possible resulting in a minimum of problems.
 To create a configuration based on some currently running kernel, you will need to first obtain
 a copy of the configuration file for the that kernel. Depending on how the running kernel was
 configured a compressed version of that file might be in \filename{/proc/config.gz}. My Ubuntu
-14.04 distribution stores a copy of the current configuration in
-\filename{/boot/config-3.16.0-45-generic} where 45 is the current (as of the time of this
+16.04 distribution stores a copy of the current configuration in
+\filename{/boot/config-4.4.0-92-generic} where 92 is the current (as of the time of this
 writing) release number of the Ubuntu kernel. You can read the file \filename{/proc/version} to
 find the exact version of the running kernel. That information might be useful for determining
 which configuration file is the most appropriate if there is more than one.
@@ -227,14 +229,16 @@ Copy the existing configuration file to the root of your new kernel source tree 
 for use with the new kernel. For example, if you are building a new kernel for your development
 system:
 \begin{commands}
-\$ cp /boot/config-3.16.0-45-generic .config \\
+\$ cp /boot/config-4.4.0-92-generic .config \\
 \$ make oldconfig
 \end{commands}
 
 If you are building a kernel to run on an experimental system you should create a
 \filename{.config} that is suitable for that system. Thus instead of copying the existing
-configuration of the development system, you should instead take it from the experimental
-system.
+configuration of the development system, you should, in theory, instead take it from the
+experimental system. In practice, if you are using the same Linux distribution on both the
+development and experimental system, it is reasonable to use the configuration file from the
+development system as the basis for your configuration.
 
 There are two kinds of issues that will be reported by the \command{make oldconfig} command.
 First, configuration options in the existing kernel that are not in the new kernel (because they
@@ -276,16 +280,16 @@ use (although they may be acceptable on the experimental system). Consult the he
 on each option for more information.
 
 If you wish to debug your kernel using a source level debugger you will want ``Compile the
-kernel with debug info'' turned on (this is the default in the Ubuntu 14.04 configuration). Be
+kernel with debug info'' turned on (this is the default in the Ubuntu 16.04 configuration). Be
 aware that this option greatly increases the amount of disk space required to build the kernel
 since every object file produced by the compiler contains debugging symbols.\footnote{Several
   gigabytes of disk space are required for a full build using debugging.} This option is
 appropriate if you are creating a User Mode Linux kernel (see Section~\ref{sec:UML}) or if you
-plan to use a kernel debugger or a tool to analyze kernel crash dumps.
+plan to use a kernel debugger (such as KGDB) or a tool to analyze kernel crash dumps.
 
 If you are building a kernel for use on an experimental system, and you wish to debug it
 remotely using KGDB, you will want to enable KGDB support in the kernel configuration (this is
-also the default in the Ubuntu 14.04 configuration). I say more about setting up and using KGDB
+also the default in the Ubuntu 16.04 configuration). I say more about setting up and using KGDB
 in the companion document \textit{DevBox and HackBox}.
 
 \subsection{Building}
@@ -322,6 +326,13 @@ motivated to configure your experimental system with a minimal amount of memory 
 be used for any ``real'' work. As a result, without striping the modules, it is likely that the
 initial RAM disk will be too large for a minimally configured system to use.
 
+One disadvantage of stripping debugging information from the modules is, obviously, you won't be
+able to step into those modules or set break points in them when debugging the kernel. This
+might be an issue if you are trying to use the debugger to study the operation of the kernel.
+However, if you are mostly interested in debugging your own kernel modifications or kernel
+modules, removing debugging information from the distributed modules will probably not cause you
+any issues.
+
 You should install modules even on your development system because the module library of a
 kernel is used during the compilation of external modules for that kernel. However, it is safe
 to install modules for a kernel even if you usually run a different kernel. Each kernel has its
@@ -332,23 +343,23 @@ that system where they can be used. On the development system, after installing 
 following:
 \begin{commands}
 \# cd /lib/modules \\
-\# tar cf - 3.18.4 | gzip > modules-3.18.14.tar.gz
+\# tar cf - 4.12.8 | gzip > modules-4.12.8.tar.gz
 \end{commands}
 
-Then transfer \filename{modules-3.18.14.tar.gz} to the experimental system and unpack it there
+Then transfer \filename{modules-4.12.8.tar.gz} to the experimental system and unpack it there
 using:
 \begin{commands}
 \# cd /lib/modules \\
-\# gunzip < modules-3.18.14.tar.gz | tar xf -
+\# gunzip < modules-4.12.8.tar.gz | tar xf -
 \end{commands}
 
 You should next copy and rename three files from your freshly built kernel to the
 \filename{/boot} directory on the target system. For example, if you plan to run the new kernel
 on the development system (with paths relative to the root of the kernel source tree):
 \begin{commands}
-\# cp arch/x86/boot/bzImage /boot/vmlinuz-3.18.14 \\
-\# cp .config /boot/config-3.18.14 \\
-\# cp System.map /boot/System.map-3.18.14
+\# cp arch/x86/boot/bzImage /boot/vmlinuz-4.12.8 \\
+\# cp .config /boot/config-4.12.8 \\
+\# cp System.map /boot/System.map-4.12.8
 \end{commands}
 
 The \filename{System.map} file contains a list of all symbols in the kernel and their
@@ -383,7 +394,7 @@ Manually creating this initial RAM disk is a somewhat involved procedure. Fortun
 utility program named \command{mkinitramfs} that does most of the work. On a Ubuntu system the
 command is:
 \begin{commands}
-\# mkinitramfs -o /boot/initrd.img-3.18.14 3.18.14
+\# mkinitramfs -o /boot/initrd.img-4.12.8 4.12.8
 \end{commands}
 
 This creates a RAM disk using the same modules as in the existing configuration, except that it
@@ -397,7 +408,7 @@ of those resources.
 
 \subsubsection{Configuring GRUB}
 
-Once you have \filename{vmlinuz-3.18.14} and \filename{initrd.img-3.18.14} in the
+Once you have \filename{vmlinuz-4.12.8} and \filename{initrd.img-4.12.8} in the
 \filename{/boot} directory of your target system you only need to update your boot loader to
 provide an option to boot the new kernel. This can be done by cloning the information for the
 existing kernel to a new menu entry and modify the names of the kernel image file and RAM disk
@@ -504,7 +515,7 @@ this in more detail later in this document.
 \subsection{Compiling UML}
 
 The procedure for compiling the User Mode Linux kernel itself is simple. In what follows I will
-assume you are using a 3.x kernel. The 3.x kernel comes with UML as one of the officially
+assume you are using a 4.x kernel. The 4.x kernel comes with UML as one of the officially
 supported architectures. First, unpack the kernel source code to a suitable working directory.
 Next run the command:
 \begin{commands}
@@ -666,9 +677,9 @@ section I talk about how to configure a few of these tools for use with the Linu
 
 Note that you should only set up code browsing tools \emph{after} you've applied any patches to
 the source code. Patches will, of course, modify files and change the line numbers were
-functions are defined, etc. If you index the source and then apply patches you will want to
-reindex the source afterward. However, it shouldn't matter if you've compiled the kernel first
-or not. Code browsing tools are normally smart enough to ignore object files.
+functions are defined, etc. If you index the source and then apply patches or make other changes
+you will want to reindex the source afterward. However, it shouldn't matter if you've compiled
+the kernel first or not. Code browsing tools are normally smart enough to ignore object files.
 
 \subsection{Cscope}
 
@@ -688,7 +699,7 @@ number of duplicate declarations the tool returns.
 # Set a few variables. Change here for your system.
 CSCOPE_DIR=/home/student/cscope
 CSCOPE_FILE=$CSCOPE_DIR/cscope.files
-LNX=/home/peter/Linux/linux-3.18.14
+LNX=/home/student/linux-4.12.8
 
 # If the database hasn't yet been created, then create it.
 if [ ! -f $CSCOPE_FILE ]; then
@@ -709,6 +720,9 @@ if [ ! -f $CSCOPE_FILE ]; then
 
   echo Creating tags...
   ctags -L $CSCOPE_FILE
+  if [ -f tags ]; then
+    mv tags "$LNX"
+  fi
 
 fi
 
