@@ -1,14 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : DevBox-HackBox.tex
-% AUTHOR  : (C) Copyright 2016 by Peter C. Chapin
+% AUTHOR  : (C) Copyright 2022 by Peter C. Chapin
 % SUBJECT : DevBox and HackBox installation and use.
 %
-% DevBox and HackBox are virtual machine images for use in my operating systems class.
+% DevBox and HackBox are virtual machine images for use during the development of GenericFS and
+% for operating system hacking in general. They were developed originally for my operating
+% systems class at Vermont Tecnical College.
 %
 %       Peter C. Chapin
 %       Computer Information Systems
 %       Vermont Technical College
-%       Randolph Center, VT. 05061
+%       Williston, VT. 05495
 %       pchapin@vtc.edu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -34,8 +36,8 @@
 % Title page information
 % ----------------------
 \title{DevBox and HackBox}
-\author{\copyright\ Copyright 2017 by Peter C. Chapin}
-\date{Last Revised: August 24, 2017}
+\author{\copyright\ Copyright 2022 by Peter C. Chapin}
+\date{Last Revised: June 27, 2022}
 \maketitle
 
 \tableofcontents
@@ -50,19 +52,20 @@ debug an operating system while running the debugger tool on the same machine. T
 needed so the debugger and the debugee can be properly separated.
 
 In this document I call the development system ``DevBox.'' It is a full desktop system with all
-the usual tool and conveniences. It is on DevBox where you spend most of your time working and
+the usual tools and conveniences. It is on DevBox where you spend most of your time working and
 compiling your programs. It is on DevBox where you run source level debuggers.
 
-The experimental system I call call ``HackBox.'' It is not a full desktop system and instead is
+The experimental system I call ``HackBox.'' It is not a full desktop system and instead is
 minimally configured. The smaller, lighter configuration makes testing and error recovery
 easier.
 
-This document describes how to set up the preconfigured DevBox and HackBox virtual machines I
-provide for my operating systems course. I describe how to install the VirtualBox VM software,
-how to import and run the DevBox and HackBox virtual machines, and how to exercise the system to
-verify that it is set up properly. At the end of this document I include some notes on how
-DevBox and HackBox were built. That information is for reference only and not essential for
-using the systems.
+This document describes how to set up the preconfigured DevBox and HackBox virtual machines
+provided for the operating systems course at Vermont Technical College. I describe how to
+install the VirtualBox VM software, how to import and run the DevBox and HackBox virtual
+machines, and how to exercise the system to verify that it is set up properly. At the end of
+this document I include some notes on how DevBox and HackBox were built. That information is for
+reference only and not essential for using the systems, but may be of interest to anyone who
+wants to build (or rebuild) the virtual machines.
 
 \section{Installing VirtualBox}
 
@@ -71,17 +74,35 @@ installed. If you are using a lab machine you can skip this section and continue
 Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on your personal
 machine you will need to first install VirtualBox on your system.
 
+\textit{Important note for macOS users!} The DevBox and HackBox virtual machines provided are
+x86_64 guests. At the time of this writing, it is not possible to run these guests on Mac
+computers based on the Apple ARM processors (M1, M2, etc.). If you have such a computer, you
+will need to either find an x86_64 system on which to run the virtual machines (Windows, Linux,
+or an x86_64 based Mac), or you can use one of the lab machines at Vermont Technical College.
+
 DevBox and HackBox together consume significant resources. Before trying to install them on your
-personal machine you should be sure you have at least 6 GiB of memory and at least 50 GiB of
-free disk space. You also need to have hardware virtualization support turned on in the BIOS of
-your host computer. Most new machines come with this feature turned on by default. Older
-machines may require you to enter the BIOS and activate this feature. If your machine is very
-old it may not support hardware virtualization at all. Finally, DevBox and HackBox assume that
-your host has at least two cores.
+personal machine you should be sure you have at least 6 GiB of memory (preferably 8 GiB or more)
+and at least 50 GiB of free disk space. You also need to have hardware virtualization support
+turned on in the BIOS of your host computer. Most machines come with this feature turned on by
+default, so if you are unsure you can probably ignore this issue until you have an actual
+problem. Older machines may require you to enter the BIOS and activate this feature. If your
+machine is extremely old it may not support hardware virtualization at all. Finally, DevBox and
+HackBox assume that your host has at least two cores.
 
 If the host does not meet the requirements above it may be possible to reconfigure the virtual
 machines so that they will work anyway. However you may have to sacrifice some features or
 endure suboptimal performance in that case.
+
+If you are using a Windows machine with the Hyper-V service running, you may run into issues
+running VirtualBox. The Hyper-V service is a ``type 1'' hypervisor whereas VirtualBox is a
+``type 2'' hypervisor. These two types fundamentially conflict with each other. In fact, running
+VirtualBox on system with Hyper-V enabled didn't work at all until relatively recently. Modern
+VirtualBox versions \emph{do} work on top of Hyper-V, but performance can be very slow under
+some conditions. When you launch a guest VM, look in the lower right corner of the window. If
+you see a blue-gray box with a ``V'' then you are running normally. If you see a green turtle,
+you probably have Hyper-V enabled. You could disable Hyper-V to get better performance, but be
+aware that this will disable any other virtualization system you may have installed that relies
+on it (i.e., docker).
 
 If you still wish to proceed, begin by downloading VirtualBox from
 \url{http://www.virtualbox.org}. Be sure to download both the main installer for your system
@@ -97,8 +118,8 @@ to install that as well.
 
 DevBox and HackBox are distributed as virtual appliances. This is a standard file format that
 includes not only the virtual hard disk (compressed) but also the virtual machine's
-configuration. Once you import the virtual appliance into your virtualization software you can
-boot a virtual machine by just starting it as you might start a real computer.
+configuration. Once you import the virtual appliance into VirtualBox you can boot a virtual
+machine by just starting it as you might start a real computer.
 
 The virtual appliance file format is accepted by several different virtualization products.
 However, DevBox and HackBox assume they are running under VirtualBox, and, in particular, DevBox
@@ -108,19 +129,16 @@ collection of software components that are loaded into the guest and that stream
 operation of the system.\footnote{The term ``guest'' refers to the system running inside the
   virtual machine. The term ``host'' refers to the system running the virtualization software.}
 
-You may be able to run DevBox and HackBox using some other virtualization product. However, you
-will probably have to do some additional configuration before it will work well. VirtualBox is
-the only virtualization software that is officially supported for use in my operating systems
-class.
+You may be able to run DevBox and HackBox using some other virtualization product such as
+VMware. However, you will probably have to do some additional configuration before it will work
+well.
 
 To import the virtual appliances into VirtualBox follow the steps below.
 
 \begin{enumerate}
 
-\item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. See my web
-  site for the locations where these files are currently available. The names of the files
-  contain the date when that version was released. I normally release a new version of both VMs
-  shortly before the start of each semester.
+\item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. The names of
+  the files contain the date when that version was released.
 
 \item Start VirtualBox and select ``Import Appliance'' from the File menu. Follow the prompts.
   This will unpack the OVA file and add the virtual machine to VirtualBox's start menu. Repeat
@@ -136,7 +154,7 @@ virtual machines. \emph{DevBox is configured to use 2.0 GiB of memory and HackBo
   adjust the configured value downward.} If your host computer is well endowed with memory you
 might consider increasing the amount available to the virtual machines. A good rule of thumb is
 to allocate no more than 50\% of your system's physical memory to \emph{all} virtual machines
-taken together.
+taken together (that you intend to run at the same time).
 
 After you have imported the appliances you can delete the OVA files to save disk space. However,
 if you have sufficient disk space you might consider keeping the files in case you need to
@@ -147,16 +165,18 @@ It is perfectly reasonable to boot both DevBox and HackBox at the same time; in 
 often necessary for the kind of work you'll be doing. Each virtual machine runs in its own
 window. DevBox presents a full graphical desktop; HackBox is console only. The Linux
 distribution running inside both virtual machines is Ubuntu, 64~bit. DevBox is using the desktop
-version of Ubuntu 16.04 and HackBox is using the server version of Ubuntu 16.04.
+version of Ubuntu 20.04 and HackBox is using the server version of Ubuntu 20.04.
 
 You will likely have to boot HackBox first if you want the serial consoles to communicate with
 each other properly. This is because HackBox's machine configuration sets up its virtual serial
 port in server mode; DevBox will probably be unable to connect to it unless it already exists
-when DevBox starts. \textit{TODO: Check this!}
+when DevBox starts. \textit{TODO: Check this!} This is only a consideration when you plan to use
+HackBox. You can, and often will, use DevBox by itself. In that case it is not necessary to
+start HackBox at all.
 
 Both DevBox and HackBox has a user account named ``student'' with a password of ``frenchfry.''
-You should log in as this user. The student user can use \texttt{sudo bash} to create a root
-shell when necessary.
+You should log in as this user. The student user can use \texttt{sudo} when necessary to perform
+administrative tasks.
 
 \section{Snapshots}
 
@@ -173,14 +193,14 @@ taken.
 
 With this protection in place you are free to experiment without concern of causing irreparable
 damage. For example, if you want to try building and installing a new version of the C
-library\ldots\ go ahead! Take a snapshot first and if the result is a major disaster you can
+library\ldots\ go ahead! Take a snapshot first, and if the result is a major disaster you can
 just roll back to where you started and try again. In the worst case scenario you could delete
 your virtual machine and re-import it from the original OVA file. Of course this rolls back all
 changes you ever made to the system but the base configuration will be fully restored.
 
 It is likely you will snapshot HackBox frequently during your work. This is because HackBox will
 be running experimental kernels and kernel modules and is thus subject to random, spectacular
-failures. In contrast DevBox should remain fairly stable since it only runs software blessed by
+failures. In contrast, DevBox should remain fairly stable since it only runs software blessed by
 Ubuntu and well established third party products. Because of HackBox's minimal configuration,
 snapshots of HackBox should be small and quick to make. This is a nice side effect of using two
 machines in this way.
@@ -195,7 +215,7 @@ opportunity to exercise the system in a relevant manner.
 \begin{enumerate}
 
 \item If any virtual machine is running, shut it down. If you are not running VirtualBox, start
-  the VirtualBox application. Either way, at this point, you should be looking at VirtualBox's
+  the VirtualBox application. Either way, after this step, you should be looking at VirtualBox's
   window that lists your configured virtual machines, but you should have no virtual machine
   actually running.
 
@@ -220,8 +240,8 @@ $ ping hackbox
   network connectivity is functional.
 
   Both virtual machines also have a second network interface defined that connects via a network
-  address translator to the host's physical network interface. This gives both machines access
-  to the Internet for updates and other purposes.
+  address translator (NAT) to the host's physical network interface. This gives both machines
+  access to the Internet for updates and other purposes.
 
 \item On DevBox issue the command:
 \begin{Verbatim}
@@ -299,7 +319,9 @@ include/generated/autoconf.h
   been built and \texttt{make} should realize that most of the object files are up to date (even
   so it can take several minutes to do this). If \texttt{make} appears to be recompiling
   everything something is wrong (possibly you accidentally saved changes when looking the
-  configuration earlier). In that case just cancel the build and don't worry about this step.
+  configuration earlier). In that case just cancel the build and don't worry about this step to
+  save time. You will need to suffer the full build eventually, however, but it might take hours
+  depending on your hardware.
 
 \item Copy the file:
 \begin{Verbatim}
@@ -318,7 +340,7 @@ arch/x86/boot/bzImage
 \begin{Verbatim}
 $ sudo shutdown -r now
 \end{Verbatim}
-  to reboot HackBox immediately.
+  to reboot HackBox immediately. The \texttt{-r} option means ``reboot.''
 
 \end{enumerate}
 
@@ -329,17 +351,20 @@ $ sudo shutdown -h now
 Here the \texttt{-h} option means ``halt.'' After the system shuts down you can restore to the
 snapshot to undo any changes made during this session and put the system back into its initial
 pristine state. You may find it useful to do this after each experiment.\footnote{Avoid storing
-  anything of importance on HackBox. Use DevBox for all files you wish to keep.}
+  anything of importance on HackBox. Use DevBox for all files you wish to keep, and even then
+  back them up regularly by transferring important files elsewhere.}
 
 Although you will be recompiling the kernel in some labs, most of the programming you'll be
 doing will actually be in the form of external kernel modules. These are modules that are not
 part of the normal distribution and that are always loaded dynamically. Details about how to do
 this will be provided in the appropriate lab.
 
-In addition to Linux we will also be experimenting with an operating system written by a team of
-VTC students for their 2008/2009 senior project. That system is called Phoenix. Using Phoenix
-does not require HackBox at all. Instead it runs inside a virtualization product called Bochs
-running inside the DevBox VM (yes, this amounts to a nested virtual machine).
+In addition to Linux, we may also experiment with an operating system written by a team of VTC
+students for their 2008/2009 senior project. That system is called Phoenix. Using Phoenix does
+not require HackBox at all. Instead it runs inside a virtualization product called Bochs running
+inside the DevBox VM. Yes, this amounts to a nested virtual machine, but unlike the situation
+with Hyper-V described earlier Bochs is an ordinary user process and doesn't introduce the same
+complications of trying to use a type 1 and type 2 hypervisor at the same time.
 
 If you wish to try Phoenix to see if it works for you, follow the steps below.
 
@@ -356,8 +381,9 @@ $ git pull
 $ source useOW.sh
 \end{Verbatim}
   to configure the environment of your terminal to make the Open Watcom C/C++ compilers
-  available. You might want to change the title on the terminal to reflect this so you don't
-  forget (use the ``Terminal $\rightarrow$ Set Title'' menu item on the terminal program).
+  available. Phoenix is built with Open Watcom. You might want to change the title on the
+  terminal to reflect this so you don't forget (use the ``Terminal $\rightarrow$ Set Title''
+  menu item on the terminal program).
 
 \item Use the \texttt{makeandrun.sh} script in the top level Phoenix folder. That script creates
   a Phoenix boot disk image containing the system and several sample programs, and then launches
@@ -375,7 +401,7 @@ $ source useOW.sh
 
 KGDB is a kernel debugger that allows you to connect \texttt{gdb} running on DevBox to the
 kernel running on HackBox. Using this tool is a bit intricate. Here I outline the basic
-procedure. See the class web page for links to additional information.
+procedure. See other resources for additional information.
 
 When you want to use the debugging tools you must log into HackBox by way of a serial terminal.
 Do \emph{not} use SSH and do not use the console. While the HackBox kernel is being debugged the
@@ -521,22 +547,23 @@ directory beneath your home directory on the remote host.
 \section{Shutting Down}
 
 When you are finished using the virtual machines \emph{do not just close the VirtualBox window!}
-Closing VirtualBox is equivalent to pulling the power on a real machine. Instead you should shut
-down the guest operating system properly. On DevBox in the upper right corner of the desktop
-there is a menu with a ``Shutdown'' option. On HackBox, as the root user, issue the command:
+Closing VirtualBox is equivalent to pulling the power plug on a real machine. Instead you should
+shut down the guest operating system properly. On DevBox in the upper right corner of the
+desktop there is a menu with a ``Shutdown'' option. On HackBox, as the root user, issue the
+command:
 \begin{Verbatim}
 # shutdown -h now
 \end{Verbatim}
 
 Alternatively you can suspend the virtual machine. On the VirtualBox menu (not inside the guest)
 do ``Machine $\rightarrow$ Close\ldots'' In the dialog box that appears select ``Save the
-machine state.'' The next time you start the virtual machine will resume from the saved state.
-This is usually quicker than booting the system from scratch.
+machine state.'' The next time you start the virtual machine it will resume from the saved
+state. This is usually quicker than booting the system from scratch.
 
 \section{Setup Notes}
 
 This section contains some notes on how DevBox and HackBox were initially configured. They are
-intended to be helpful to anyone else who wants to build the systems from scratch rather than
+intended to be helpful to anyone who wants to build the systems from scratch rather than
 downloading the preconfigured systems.
 
 \textit{TODO: Finish me!}
