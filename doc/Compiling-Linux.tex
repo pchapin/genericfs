@@ -62,7 +62,7 @@
 % ----------------------
 \title{Compiling Linux}
 \author{\copyright\ Copyright 2022 by Peter C. Chapin}
-\date{Last Revised: July 18, 2022}
+\date{Last Revised: July 19, 2022}
 \maketitle
 
 % -----------------
@@ -352,6 +352,13 @@ drivers (as modules) even though your system will likely never use them. Neverth
 find some drivers useful, especially in an experimental context, so it doesn't hurt to build
 them all.
 
+The build process may require various tools and libraries that you do not have installed on your
+system initially. If the build fails, look at the reason and then try to install the necessary
+package(s) to satisfy any missing requirements. Run the \command{make} command again to restart
+the build (it will pick up where it left off). You may need to do this several times. However,
+once you have all the necessary tools and libraries installed, future builds should go more
+smoothly.
+
 \subsection{Installing}
 
 You do not need to be root to configure and compile the kernel. If you unpack the kernel source
@@ -383,11 +390,11 @@ any issues.
 
 Another aspect of stripping debugging information is the effect it has on module signatures.
 Normally, the debugging information is covered by the signature. Thus the signature is
-invalidated or removed \todo{Which is it?} if the debugging information is stripped afterward.
+invalidated or removed (\todo{Which is it?}) if the debugging information is stripped afterward.
 However, the \command{make} command above strips debugging information first, before making the
 signatures, so you end up with signed, stripped modules as desired. \todo{The \command{file}
-  command uses the phrase ``with debug_info'' as opposed to ``stripped.'' In fact, it seems to
-  use ``stripped'' for something else. The terminology should be made consistent.}
+  command uses the phrase ``with debug\_info'' as opposed to ``stripped.'' In fact, it seems to
+  use ``stripped'' for something else. The terminology here should be made consistent.}
 
 You should install modules even on your development system because the module library of a
 kernel is used during the compilation of external modules for that kernel. However, it is safe
@@ -480,9 +487,9 @@ process you will see the GRUB boot menu. From there you can select your new kern
 
 \subsubsection{Installing on Floppy}
 
-\textit{This section is old needs to be rewritten. For one thing it needs to explain how to
-handle the initial RAM disk. For a second thing it should probably really talk about setting up
-a flash drive instead of a floppy (who has floppy drives?).}
+\textit{This section is very old and needs to be rewritten (or removed?). For one thing it needs
+  to explain how to handle the initial RAM disk. For a second thing it should probably really
+  talk about setting up a flash drive instead of a floppy (who has floppy drives?).}
 
 The following instructions pertain to users who are booting Linux from a floppy disk. Note that
 this is not the normal configuration (although it is sometimes useful in lab situations).
@@ -547,6 +554,9 @@ Now you can reboot the machine from your new boot floppy to check your new kerne
 
 \section{User Mode Linux}
 \label{sec:UML}
+
+\textit{This section is old and needs to be reviewed and updated. It has been a while since I
+  have built a User Mode Linux kernel.}
 
 Setting up a completely independent experimental system is a nice way to do kernel development.
 However, there are times when it may not be desirable. For example, you might want to do kernel
@@ -755,7 +765,7 @@ number of duplicate declarations the tool returns.
 # Set a few variables. Change here for your system.
 CSCOPE_DIR=/home/student/cscope
 CSCOPE_FILE=$CSCOPE_DIR/cscope.files
-LNX=/home/student/linux-4.12.8
+LNX=/home/student/linux-5.18.12
 
 # If the database hasn't yet been created, then create it.
 if [ ! -f $CSCOPE_FILE ]; then
