@@ -37,7 +37,7 @@
 % ----------------------
 \title{DevBox and HackBox}
 \author{\copyright\ Copyright 2022 by Peter C. Chapin}
-\date{Last Revised: June 27, 2022}
+\date{Last Revised: July 18, 2022}
 \maketitle
 
 \tableofcontents
@@ -47,15 +47,15 @@
 When doing operating system work you ideally want to run your experimental software on a
 different computer than the one you use for development. An error in an operating system module
 or driver has the potential to corrupt the entire machine; testing on your development system
-may lead to headaches if such corruption should occur. Also it is generally not possible to
-debug an operating system while running the debugger tool on the same machine. Two machines are
-needed so the debugger and the debugee can be properly separated.
+may lead to headaches if such corruption occurs. Also, it is generally not possible to debug an
+operating system while running the debugger tool on the same machine. Two machines are needed so
+the debugger and the debugee can be properly separated.
 
-In this document I call the development system ``DevBox.'' It is a full desktop system with all
-the usual tools and conveniences. It is on DevBox where you spend most of your time working and
-compiling your programs. It is on DevBox where you run source level debuggers.
+In this document I call the development system ``DevBox.'' It is a full desktop environment with
+all the usual tools and conveniences. It is on DevBox where you spend most of your time working
+and compiling your programs. It is on DevBox where you run source level debuggers.
 
-The experimental system I call ``HackBox.'' It is not a full desktop system and instead is
+The experimental system I call ``HackBox.'' It is not a full desktop environment and instead is
 minimally configured. The smaller, lighter configuration makes testing and error recovery
 easier.
 
@@ -95,7 +95,7 @@ endure suboptimal performance in that case.
 
 If you are using a Windows machine with the Hyper-V service running, you may run into issues
 running VirtualBox. The Hyper-V service is a ``type 1'' hypervisor whereas VirtualBox is a
-``type 2'' hypervisor. These two types fundamentially conflict with each other. In fact, running
+``type 2'' hypervisor. These two types fundamentally conflict with each other. In fact, running
 VirtualBox on system with Hyper-V enabled didn't work at all until relatively recently. Modern
 VirtualBox versions \emph{do} work on top of Hyper-V, but performance can be very slow under
 some conditions. When you launch a guest VM, look in the lower right corner of the window. If
