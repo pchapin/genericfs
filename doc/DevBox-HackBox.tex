@@ -27,6 +27,25 @@
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
 
+% ------------
+% New Commands
+% ------------
+
+% Add commands in alphabetical order.
+\newcommand{\command}[1]{\texttt{#1}}
+\newcommand{\filename}[1]{\texttt{#1}}
+\newcommand{\newterm}[1]{\textit{#1}}
+\newcommand{\todo}[1]{\textit{TODO: #1}}
+
+% ----------------
+% New Environments
+% ----------------
+
+% An environment to display a sequence of commands.
+\newenvironment{commands}
+  {\begin{quote} \tt}
+  {\end{quote}}
+
 % +++++++++++++++++++
 % The document itself
 % +++++++++++++++++++
@@ -37,7 +56,7 @@
 % ----------------------
 \title{DevBox and HackBox}
 \author{\copyright\ Copyright 2022 by Peter C. Chapin}
-\date{Last Revised: July 18, 2022}
+\date{Last Revised: July 20, 2022}
 \maketitle
 
 \tableofcontents
@@ -75,23 +94,23 @@ Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on you
 machine you will need to first install VirtualBox on your system.
 
 \textit{Important note for macOS users!} The DevBox and HackBox virtual machines provided are
-x86_64 guests. At the time of this writing, it is not possible to run these guests on Mac
+x86\_64 guests. At the time of this writing, it is not possible to run these guests on Mac
 computers based on the Apple ARM processors (M1, M2, etc.). If you have such a computer, you
-will need to either find an x86_64 system on which to run the virtual machines (Windows, Linux,
-or an x86_64 based Mac), or you can use one of the lab machines at Vermont Technical College.
+will need to either find an x86\_64 system on which to run the virtual machines (Windows, Linux,
+or an x86\_64 based Mac), or you can use one of the lab machines at Vermont Technical College.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
-personal machine you should be sure you have at least 6 GiB of memory (preferably 8 GiB or more)
-and at least 50 GiB of free disk space. You also need to have hardware virtualization support
-turned on in the BIOS of your host computer. Most machines come with this feature turned on by
-default, so if you are unsure you can probably ignore this issue until you have an actual
-problem. Older machines may require you to enter the BIOS and activate this feature. If your
-machine is extremely old it may not support hardware virtualization at all. Finally, DevBox and
-HackBox assume that your host has at least two cores.
+personal machine you should be sure you have at least 8 GiB of memory and 100 GiB of free disk
+space. You also need to have hardware virtualization support turned on in the BIOS of your host
+computer. Most machines come with this feature turned on by default, so if you are unsure you
+can probably ignore this issue until you have an actual problem. Older machines may require you
+to enter the BIOS and activate this feature. If your machine is extremely old it may not support
+hardware virtualization at all. Finally, DevBox and HackBox assume that your host has at least
+two cores.
 
 If the host does not meet the requirements above it may be possible to reconfigure the virtual
 machines so that they will work anyway. However you may have to sacrifice some features or
-endure suboptimal performance in that case.
+endure sub-optimal performance in that case.
 
 If you are using a Windows machine with the Hyper-V service running, you may run into issues
 running VirtualBox. The Hyper-V service is a ``type 1'' hypervisor whereas VirtualBox is a
@@ -108,7 +127,9 @@ If you still wish to proceed, begin by downloading VirtualBox from
 \url{http://www.virtualbox.org}. Be sure to download both the main installer for your system
 \emph{and} the Extension Pack. The Extension Pack adds important functionality that DevBox and
 HackBox requires. \emph{The virtual machines will likely not boot in their default configuration
-  without the Extension Pack installed!}
+  without the Extension Pack installed!} The current versions of DevBox and HackBox have been
+tested using VirtualBox version 6.1.34. They will probably work with other versions of
+VirtualBox that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
 to install that as well.
@@ -138,7 +159,8 @@ To import the virtual appliances into VirtualBox follow the steps below.
 \begin{enumerate}
 
 \item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. The names of
-  the files contain the date when that version was released.
+  the files contain the date when that version was released. The files also have an associated
+  SHA256 checksum that can be used to check for download errors.
 
 \item Start VirtualBox and select ``Import Appliance'' from the File menu. Follow the prompts.
   This will unpack the OVA file and add the virtual machine to VirtualBox's start menu. Repeat
@@ -149,9 +171,9 @@ To import the virtual appliances into VirtualBox follow the steps below.
 In principle no further configuration is necessary since the configurations of the virtual
 machines are contained in their original OVA files. However you might review the machine
 settings and tweak them if desired. Note especially the amount of memory allocated to the
-virtual machines. \emph{DevBox is configured to use 2.0 GiB of memory and HackBox is configured
-  to use 0.5 GiB of memory. If your host computer has less than 6 GiB of memory you may want to
-  adjust the configured value downward.} If your host computer is well endowed with memory you
+virtual machines. \emph{DevBox is configured to use 3.0 GiB of memory and HackBox is configured
+  to use 0.5 GiB of memory. If your host computer has less than 8 GiB of memory you may want to
+  adjust the configured values downward.} If your host computer is well endowed with memory you
 might consider increasing the amount available to the virtual machines. A good rule of thumb is
 to allocate no more than 50\% of your system's physical memory to \emph{all} virtual machines
 taken together (that you intend to run at the same time).
@@ -164,15 +186,27 @@ long download.
 It is perfectly reasonable to boot both DevBox and HackBox at the same time; in fact this is
 often necessary for the kind of work you'll be doing. Each virtual machine runs in its own
 window. DevBox presents a full graphical desktop; HackBox is console only. The Linux
-distribution running inside both virtual machines is Ubuntu, 64~bit. DevBox is using the desktop
-version of Ubuntu 20.04 and HackBox is using the server version of Ubuntu 20.04.
+distribution running inside both virtual machines is Ubuntu 20.04, 64~bit. DevBox is using the
+desktop version of Ubuntu and HackBox is using the server version of Ubuntu.
 
-You will likely have to boot HackBox first if you want the serial consoles to communicate with
-each other properly. This is because HackBox's machine configuration sets up its virtual serial
-port in server mode; DevBox will probably be unable to connect to it unless it already exists
-when DevBox starts. \textit{TODO: Check this!} This is only a consideration when you plan to use
-HackBox. You can, and often will, use DevBox by itself. In that case it is not necessary to
-start HackBox at all.
+A facility is configured that allows DevBox and HackBox to communicate with each other via a
+serial connection (in addition to an internal network). The serial connection is needed for
+debugging the kernel on HackBox since when the kernel is being debugged the network will be
+non-functional. Thus both virtual machines have a virtual serial port configured using a named
+pipe for inter-machine communication. The format of this name depends on your host OS (the named
+pipe is managed by the host). Thus when you try to boot the machines for the first time you
+might see an error about being unable to create the necessary named pipe if the name format is
+incorrect for your host. On Linux and macOS systems use a name such as
+\filename{/tmp/hackserial}. On Windows systems use a name such as
+\filename{$\backslash\backslash$.$\backslash$pipe$\backslash$hackserial}. See
+\url{https://www.virtualbox.org/manual/ch03.html#serialports} for more information.
+
+Note that the serial port configuration on DevBox is in ``server mode'' which means DevBox is
+responsible for creating the named pipe so HackBox can use it. The consequence of this is that
+you will need to boot DevBox before you boot HackBox in cases where you want to use both. In
+fact, booting HackBox alone may produce an error message from VirtualBox about not being able to
+connect to the named pipe. This isn't necessarily a problem depending on what you intend to do
+with HackBox.
 
 Both DevBox and HackBox has a user account named ``student'' with a password of ``frenchfry.''
 You should log in as this user. The student user can use \texttt{sudo} when necessary to perform
@@ -210,7 +244,7 @@ machines in this way.
 It is nice after installing DevBox and HackBox to do some simple operations to verify that they
 are working for you in a useful way. Keep in mind that none of the steps described in this
 section are necessary for DevBox or HackBox to work. They are only intended to give you an
-opportunity to exercise the system in a relevant manner.
+opportunity to exercise the two systems.
 
 \begin{enumerate}
 
@@ -219,12 +253,13 @@ opportunity to exercise the system in a relevant manner.
   window that lists your configured virtual machines, but you should have no virtual machine
   actually running.
 
-\item In the VirtualBox console select the HackBox virtual machine and take a snapshot of its
-  current state.
-
-\item Boot HackBox. Log in as the user student.
-
 \item Boot DevBox. Log in as the user student. Open a terminal window.
+
+\item Boot HackBox. Log in as the user student. At the time of this writing an error message
+  appears on HackBox's console shortly after it boots: \texttt{Dev loop8: unable to read RDB
+    block 8}. This is a known issue with the 5.18 kernel that has been discussed on the Linux
+  Kernel Mailing List (see: \url{https://lkml.org/lkml/2022/7/5/1864}). The problem is related
+  to the loopback block device driver and is not significant for our purposes. Ignore it.
 
 \item Check that you have network connectivity between the two systems. For example, on DevBox
   issue the command:
@@ -234,10 +269,10 @@ $ ping hackbox
   Run the corresponding command on HackBox to ping DevBox.
 
   Both virtual machines can communicate across an internal network managed entirely by
-  VirtualBox. They have statically assigned IP addresses (192.168.56.101 for DevBox and
-  192.168.56.102 for HackBox) with appropriate entiries in \texttt{/etc/hosts} allowing the
-  machines to communicate via unqualified names. This ping check allows you to verify that this
-  network connectivity is functional.
+  VirtualBox. They have statically assigned IP addresses (10.1.1.1/24 for DevBox and 10.1.1.2/24
+  for HackBox) with appropriate entries in \texttt{/etc/hosts} allowing the machines to
+  communicate via unqualified names. This ping check allows you to verify that this network
+  connectivity is functional.
 
   Both virtual machines also have a second network interface defined that connects via a network
   address translator (NAT) to the host's physical network interface. This gives both machines
@@ -260,12 +295,11 @@ $ minicom
 \end{Verbatim}
   Both HackBox and DevBox also have virtual serial ports defined. Those ports
   (\texttt{/dev/ttyS0} in both cases) have been connected together by VirtualBox. HackBox is
-  running a \texttt{getty} process on its ttyS0 serial port to support logins.
+  running an \texttt{agetty} process on its ttyS0 serial port to support logins.
 
   Minicom is a simple terminal program for Linux that can be used to interact with serial ports.
   After starting minicom you should be able to hit Enter and see a login prompt from HackBox.
-  Try logging in to verify that this works. We will make use of this serial connection for
-  kernel debugging purposes (the network will be non-functional during debugging).
+  Try logging in to verify that this works.
 
   When you are done experimenting with this, log out of HackBox and then type CTRL+A followed by
   X in minicom to exit minicom.
@@ -276,19 +310,19 @@ $ minicom
 $ cat /proc/version
 \end{Verbatim}
   This command reads a file in the ``magic'' proc file system that, in this case, reports
-  information about the kernel version you are using. It should say 3.18.14. This is the
-  pre-compiled experimental kernel we will be working with.
+  information about the kernel version you are using. It should say 5.18.12. This is the
+  experimental kernel we will be working with.
 
 \item On DevBox use the file manager to browse
 \begin{Verbatim}
-/home/student/linux-4.12.8
+/home/student/linux-5.18.12
 \end{Verbatim}
   This is the source code for the experimental kernel. You will become familiar with its
   organization in the future, but a quick look now is a good first step toward that goal.
 
 \item On DevBox in a terminal window change to
 \begin{Verbatim}
-/home/student/linux-4.12.8
+/home/student/linux-5.18.12
 \end{Verbatim}
   and issue the command \texttt{make menuconfig} to view the kernel configuration menu. The
   configuration you are looking at is the configuration used the last time the kernel was
@@ -303,40 +337,61 @@ $ cat /proc/version
 \begin{Verbatim}
 include/generated/autoconf.h
 \end{Verbatim}
-  to see the results of the configuration process. The \texttt{.config} file is used by the
-  kernel build system to control which source files need to be compiled and how. The
+  to see the results of the configuration process (these files were created previously when the
+  experimental kernel was prepared for HackBox). The \texttt{.config} file is used by the kernel
+  build system to control which source files need to be compiled and how. The
   \texttt{autoconf.h} header is included into source files that need to distinguish between
   various configuration options.
+\end{enumerate}
+
+\section{Kernel Modification}
+
+In this section you will make a trivial modification to the kernel by editing the kernel source
+and rebuilding the kernel on DevBox, transferring the new kernel to HackBox, and then rebooting
+HackBox to test your change. You will also back out these changes so that when you are done with
+this section there will be no lingering effect on either system.
+
+\begin{enumerate}
+
+\item In the VirtualBox console with HackBox in an ``Off'' state, select the HackBox virtual
+  machine and take a snapshot of its current state.
 
 \item Edit the file \texttt{init/version.c}\footnote{Relative paths are relative to the root of
     the kernel source tree unless context indicates otherwise.} and change the value of
   \texttt{linux\_proc\_banner} to include some distinctive text. For example you might add
   something like ``experimental'' to the existing banner. This will change the contents of
-  \texttt{/proc/version} once the modified kernel is running.
+  \texttt{/proc/version} once the modified kernel is running. I recommend that you first create
+  a backup copy of the original file using a command such as:
+\begin{verbatim}
+$ cp version.c version.c.orig
+\end{verbatim}
+
+  This makes it easy to restore the original file later.
 
 \item Issue the command \texttt{make} at the root of the kernel source tree to build a new
   kernel reflecting your changes. This should not take too long because the kernel has already
   been built and \texttt{make} should realize that most of the object files are up to date (even
   so it can take several minutes to do this). If \texttt{make} appears to be recompiling
-  everything something is wrong (possibly you accidentally saved changes when looking the
+  everything something is wrong (possibly you accidentally saved changes when looking at the
   configuration earlier). In that case just cancel the build and don't worry about this step to
   save time. You will need to suffer the full build eventually, however, but it might take hours
   depending on your hardware.
 
-\item Copy the file:
+\item Using \command{scp}, transfer the file:
 \begin{Verbatim}
 arch/x86/boot/bzImage
 \end{Verbatim}
   \emph{to HackBox} and on top of the file:
 \begin{Verbatim}
-/boot/vmlinuz-4.12.8
+/boot/vmlinuz-5.18.12
 \end{Verbatim}
   on that system. This replaces the boot experimental kernel with the version you just compiled
   containing your changed banner. It's good practice to make a backup copy of
-  \texttt{vmlinuz-4.12.8} first.
+  \texttt{vmlinuz-5.18.12} first.
 
 \item Reboot HackBox into the experimental kernel and verify that \texttt{/proc/version} has
-  changed as expected. You can use the command:
+  changed as expected. You do not need to update the \command{grub} configuration in this case
+  since you are overwriting the experimental kernel with a new version. You can use the command:
 \begin{Verbatim}
 $ sudo shutdown -r now
 \end{Verbatim}
@@ -354,10 +409,19 @@ pristine state. You may find it useful to do this after each experiment.\footnot
   anything of importance on HackBox. Use DevBox for all files you wish to keep, and even then
   back them up regularly by transferring important files elsewhere.}
 
+You should also restore the file \filename{version.c} in the source code to its original form.
+This step isn't strictly necessary in this case since this is a minor, inconsequential change.
+However, in the future you may be making non-trivial changes to the kernel source, and you'll
+want an easy way to back them out when you are done (or if they cause extreme difficulties).
+
 Although you will be recompiling the kernel in some labs, most of the programming you'll be
 doing will actually be in the form of external kernel modules. These are modules that are not
 part of the normal distribution and that are always loaded dynamically. Details about how to do
 this will be provided in the appropriate lab.
+
+\section{Phoenix}
+
+\textit{This section needs to be reviewed and updated!}
 
 In addition to Linux, we may also experiment with an operating system written by a team of VTC
 students for their 2008/2009 senior project. That system is called Phoenix. Using Phoenix does
@@ -370,7 +434,7 @@ If you wish to try Phoenix to see if it works for you, follow the steps below.
 
 \begin{enumerate}
 
-\item On DevBox change to the \texttt{Phoenix} directory and do:
+\item On DevBox change to the \texttt{Projects/Phoenix} directory and do:
 \begin{Verbatim}
 $ git pull
 \end{Verbatim}
@@ -417,7 +481,8 @@ $ minicom
 \end{Verbatim}
 This command starts the terminal program. It has been preconfigured to connect to
 \texttt{/dev/ttyS0} which is attached to HackBox's serial port of the same name by way of a
-host-level named pipe. You can hit the Enter key to get a login prompt from HackBox.
+host-level named pipe. You can hit the Enter key to get a login prompt from HackBox. Log in as
+the user student.
 
 When you are ready to debug, you must first activate KGDB on HackBox. Use a command such as:
 \begin{Verbatim}
@@ -427,7 +492,7 @@ When you are ready to debug, you must first activate KGDB on HackBox. Use a comm
 This informs the KGDB ``over console'' driver that it should use ttyS0 for communication.
 Without this step KGDB will effectively be turned off even if it has been compiled into the
 kernel. Note that this command must be executed at a root shell (using \texttt{sudo} won't
-work).
+work). You can, however, get a root shell by using the command \command{sudo bash}.
 
 There are three ways to break into the kernel.
 \begin{enumerate}
@@ -476,7 +541,10 @@ $3#33
 \end{Verbatim}
 You won't be able to see the text as you type it. This sequence is a debugging protocol packet
 that tells KDB to return to the prompt. You can then resume normal operation of HackBox by
-issuing the `go' command at the KDB prompt.
+issuing the \command{go} command at the KDB prompt.
+
+After shutting down HackBox, consider restoring to the snapshot you made earlier to ensure the
+system is in a consistent (non-destroyed) state.
 
 \section{Making Backups}
 
@@ -485,13 +553,13 @@ will entail the lose of some or all of your work. Thus I strongly recommend that
 your work often. This can be done by using a special backup script I created. To use it simply
 execute \texttt{backup} at a command prompt.
 
-It is extremely important to understand that The \texttt{backup} script only archives the files
+It is extremely important to understand that The \texttt{backup} script only backs up the files
 in the \texttt{cis-4020} folder. This means the backup archives are relatively small but it also
 means that any files you put elsewhere on the system will not be backed up. \emph{I therefor
   strongly recommend that you store all course materials in the cis-4020 folder.} Be aware that
 configuration changes you make, for example to the desktop on DevBox, are not backed up.
 
-Once the \texttt{backup} script has created the archive it will ask you if you want to tranfer
+Once the \texttt{backup} script has created the archive it will ask you if you want to transfer
 that archive to \texttt{lemuria}. Assuming you have an account on that system you can use
 \texttt{lemuria} as a repository of backups. If you do not transfer the backup file, the script
 will leave it in student's home directory where you can transfer it some other way (for example
@@ -515,8 +583,8 @@ Done
 Transfer to lemuria? [y/n] \textit{y}
 Username: \textit{pchapin}
 Password: 
-backup-cis-4020-2017-08-25.tar.gz                             100%   38KB  38.3KB/s   00:00    
-Transfer successful. Removing ~/backup-cis-4020-2017-08-25.tar.gz
+backup-cis-4020-2022-07-19.tar.gz                             100%   38KB  38.3KB/s   00:00    
+Transfer successful. Removing ~/backup-cis-4020-2022-07-19.tar.gz
 student@devbox:~$
 \end{Verbatim}
 \caption{Sample Backup Session}
@@ -531,7 +599,7 @@ mode, it even copies file permissions and date/time information. First move to s
 directory. Then do
 \begin{Verbatim}
 $ rsync -vaz --delete -e "ssh -p 2221" \
-  cis-4020 username@lemuria.cis.vtc.edu:
+    cis-4020 username@lemuria.cis.vtc.edu:
 \end{Verbatim}
 
 The \texttt{--delete} option tells \texttt{rsync} to remove files on the target that are not in
