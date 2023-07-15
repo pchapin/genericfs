@@ -1,17 +1,18 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : DevBox-HackBox.tex
-% AUTHOR  : (C) Copyright 2022 by Peter C. Chapin
+% AUTHOR  : (C) Copyright 2023 by Peter Chapin
 % SUBJECT : DevBox and HackBox installation and use.
 %
 % DevBox and HackBox are virtual machine images for use during the development of GenericFS and
 % for operating system hacking in general. They were developed originally for my operating
-% systems class at Vermont Tecnical College.
+% systems class at Vermont State University.
 %
-%       Peter C. Chapin
+%       Peter Chapin
 %       Computer Information Systems
-%       Vermont Technical College
+%       Vermont State University
+%       141 Lawrence Pl.
 %       Williston, VT. 05495
-%       pchapin@vtc.edu
+%       peter.chapin@vermontstate.edu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ++++++++++++++++++++++++++++++++
@@ -55,8 +56,8 @@
 % Title page information
 % ----------------------
 \title{DevBox and HackBox}
-\author{\copyright\ Copyright 2022 by Peter C. Chapin}
-\date{Last Revised: July 20, 2022}
+\author{\copyright\ Copyright 2023 by Peter Chapin}
+\date{Last Revised: July 15, 2023}
 \maketitle
 
 \tableofcontents
@@ -79,25 +80,25 @@ minimally configured. The smaller, lighter configuration makes testing and error
 easier.
 
 This document describes how to set up the preconfigured DevBox and HackBox virtual machines
-provided for the operating systems course at Vermont Technical College. I describe how to
-install the VirtualBox VM software, how to import and run the DevBox and HackBox virtual
-machines, and how to exercise the system to verify that it is set up properly. At the end of
-this document I include some notes on how DevBox and HackBox were built. That information is for
-reference only and not essential for using the systems, but may be of interest to anyone who
-wants to build (or rebuild) the virtual machines.
+provided for the operating systems course at Vermont State University. I describe how to install
+the VirtualBox VM software, how to import and run the DevBox and HackBox virtual machines, and
+how to exercise the system to verify that it is set up properly. At the end of this document I
+include some notes on how DevBox and HackBox were built. That information is for reference only
+and not essential for using the systems, but may be of interest to anyone who wants to build (or
+rebuild) the virtual machines.
 
 \section{Installing VirtualBox}
 
-The lab machines at Vermont Technical College should already have the VirtualBox software
-installed. If you are using a lab machine you can skip this section and continue with
+The CIS lab machines on the Williston and Randolph campuses should already have the VirtualBox
+software installed. If you are using a lab machine you can skip this section and continue with
 Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on your personal
 machine you will need to first install VirtualBox on your system.
 
 \textit{Important note for macOS users!} The DevBox and HackBox virtual machines provided are
-x86\_64 guests. At the time of this writing, it is not possible to run these guests on Mac
-computers based on the Apple ARM processors (M1, M2, etc.). If you have such a computer, you
-will need to either find an x86\_64 system on which to run the virtual machines (Windows, Linux,
-or an x86\_64 based Mac), or you can use one of the lab machines at Vermont Technical College.
+x86\_64 guests. At the time of this writing, it is not easy to run these guests on Mac computers
+based on the Apple ARM processors (M1, M2, etc.). If you have such a computer, you will need to
+either find an x86\_64 system on which to run the virtual machines (Windows, Linux, or an
+x86\_64 based Mac), or you can use one of the lab machines.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
 personal machine you should be sure you have at least 8 GiB of memory and 100 GiB of free disk
@@ -128,8 +129,8 @@ If you still wish to proceed, begin by downloading VirtualBox from
 \emph{and} the Extension Pack. The Extension Pack adds important functionality that DevBox and
 HackBox requires. \emph{The virtual machines will likely not boot in their default configuration
   without the Extension Pack installed!} The current versions of DevBox and HackBox have been
-tested using VirtualBox version 6.1.34. They will probably work with other versions of
-VirtualBox that are close to that version.
+tested using VirtualBox version 7.0.8. They will probably work with other versions of VirtualBox
+that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
 to install that as well.
@@ -160,7 +161,9 @@ To import the virtual appliances into VirtualBox follow the steps below.
 
 \item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. The names of
   the files contain the date when that version was released. The files also have an associated
-  SHA256 checksum that can be used to check for download errors.
+  MD5 checksum that can be used to check for download errors. It is recommended that, if
+  possible, you \emph{do} verify the checksums. Because of the large sizes of the files, errors
+  during the download are more likely than usual..
 
 \item Start VirtualBox and select ``Import Appliance'' from the File menu. Follow the prompts.
   This will unpack the OVA file and add the virtual machine to VirtualBox's start menu. Repeat
@@ -216,7 +219,7 @@ administrative tasks.
 
 One major benefit to doing your development inside a virtual machine is that you can use
 VirtualBox to ``snapshot'' your system just before attempting any kind of dangerous or
-complicated operation. When you create a snapshot VirtualBox remembers the entire state of the
+complicated operation. When you create a snapshot, VirtualBox remembers the entire state of the
 system. \emph{Any} change made after the snapshot is provisional. If the system becomes corrupt,
 you can just restore to the snapshot and undo all changes made since the snapshot was taken.
 
@@ -328,8 +331,8 @@ $ cat /proc/version
   configuration you are looking at is the configuration used the last time the kernel was
   compiled. It represents the current configuration of the experimental kernel running on
   HackBox.\footnote{For full details about how to compile Linux, see my companion document
-    \textit{Compiling Linux} in the same repository where you found this document.} Look around
-  to see what kinds of options are available. If you change anything, do \emph{not} save your
+    \textit{Compiling Linux} in the same location where you found this document.} Look around to
+  see what kinds of options are available. If you change anything, do \emph{not} save your
   changes. If you save any changes you will end up doing a full kernel rebuild the next time you
   try to compile it. That takes a very long time.
 
@@ -405,9 +408,9 @@ $ sudo shutdown -h now
 \end{Verbatim}
 Here the \texttt{-h} option means ``halt.'' After the system shuts down you can restore to the
 snapshot to undo any changes made during this session and put the system back into its initial
-pristine state. You may find it useful to do this after each experiment.\footnote{Avoid storing
-  anything of importance on HackBox. Use DevBox for all files you wish to keep, and even then
-  back them up regularly by transferring important files elsewhere.}
+state. You may find it useful to do this after each experiment.\footnote{Avoid storing anything
+  of importance on HackBox. Use DevBox for all files you wish to keep, and even then back them
+  up regularly by transferring important files elsewhere.}
 
 You should also restore the file \filename{version.c} in the source code to its original form.
 This step isn't strictly necessary in this case since this is a minor, inconsequential change.
@@ -423,12 +426,13 @@ this will be provided in the appropriate lab.
 
 \textit{This section needs to be reviewed and updated!}
 
-In addition to Linux, we may also experiment with an operating system written by a team of VTC
-students for their 2008/2009 senior project. That system is called Phoenix. Using Phoenix does
-not require HackBox at all. Instead it runs inside a virtualization product called Bochs running
-inside the DevBox VM. Yes, this amounts to a nested virtual machine, but unlike the situation
-with Hyper-V described earlier Bochs is an ordinary user process and doesn't introduce the same
-complications of trying to use a type 1 and type 2 hypervisor at the same time.
+In addition to Linux, we may also experiment with an operating system written by a team of
+Vermont Technical College students for their 2008/2009 senior project. That system is called
+Phoenix. Using Phoenix does not require HackBox at all. Instead it runs inside a virtualization
+product called Bochs running inside the DevBox VM. Yes, this amounts to a nested virtual
+machine, but unlike the situation with Hyper-V described earlier Bochs is an ordinary user
+process and doesn't introduce the same complications of trying to use a type 1 and type 2
+hypervisor at the same time.
 
 If you wish to try Phoenix to see if it works for you, follow the steps below.
 
@@ -598,8 +602,8 @@ program will add and remove files and directories on the target as necessary and
 mode, it even copies file permissions and date/time information. First move to student's home
 directory. Then do
 \begin{Verbatim}
-$ rsync -vaz --delete -e "ssh -p 2221" \
-    cis-4020 username@lemuria.cis.vtc.edu:
+$ rsync -vaz --delete \
+    cis-4020 username@lemuria.cis.vermontstate.edu:
 \end{Verbatim}
 
 The \texttt{--delete} option tells \texttt{rsync} to remove files on the target that are not in

@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : Compiling-Linux.tex
-% AUTHOR  : (C) Copyright 2022 by Peter C. Chapin
-% SUBJECT : Compiling Linux for kernel development..
+% AUTHOR  : (C) Copyright 2023 by Peter Chapin
+% SUBJECT : Compiling Linux for kernel development.
 %
 % This document describes how to set up a Linux kernel for kernel study and development. It
 % covers how to compile the kernel and how to set up various kernel debugging and code browsing
@@ -13,11 +13,12 @@
 %
 % Send comments or bug reports to:
 %
-%       Peter C. Chapin
+%       Peter Chapin
 %       Computer Information Systems
-%       Vermont Technical College
+%       Vermont State University
+%       141 Lawrence Pl.
 %       Williston, VT. 05495
-%       peter@pchapin.org
+%       peter.chapin@vermontstate.edu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % ++++++++++++++++++++++++++++++++
@@ -61,8 +62,8 @@
 % Title page information
 % ----------------------
 \title{Compiling Linux}
-\author{\copyright\ Copyright 2022 by Peter C. Chapin}
-\date{Last Revised: July 19, 2022}
+\author{\copyright\ Copyright 2023 by Peter Chapin}
+\date{Last Revised: July 15, 2023}
 \maketitle
 
 % -----------------
@@ -90,28 +91,28 @@
 This document describes how to compile a Linux kernel for study and development. It contains
 specific instructions for compiling an experimental kernel and for configuring various kernel
 debugging and code browsing tools. This document was originally prepared to support the
-operating systems class at Vermont Technical College. Some of the information it contains
+operating systems class at Vermont Statee University. Some of the information it contains
 targets that audience. However, much of the contents of this document would be useful to anyone
 interested in studying the Linux kernel.
 
 It is possible to run an experimental kernel on the same system as is being used for
 development. However, this arrangement is not ideal since errors in the experimental kernel may
-cause corruption of the development environment. Ideally, then, one should really configure two
+cause corruption of the development environment. Ideally, then, one should configure two
 computers: a development system running a pre-built kernel and where all the programming tools
 execute (compilers, editors, etc), and a system for hacking that runs the experimental kernel
 but is otherwise expendable.
 
 This document describes both single machine and dual machine arrangements. In the text below the
-\newterm{target system} is the system on which you plan to run the experimental kernel. The
+\newterm{target system} is the system where you will ultimately run the experimental kernel. The
 \newterm{development system} is the system where you will do your development work. The
-\newterm{experimental system} is a separate system used only for testing. In a single machine
+\newterm{experimental system} is the system where you will do testing. In a single machine
 configuration the target system and the development system are the same, and there is no
 experimental system. In a dual machine configuration the target system and the experimental
 system are the same.
 
 Additional details about how to set up and use the dual machine configuration as two connected
-virtual machines are in the companion document \textit{DevBox and HackBox} in the same
-repository as where you found this document.
+virtual machines are in the companion document \textit{DevBox and HackBox} in the same location
+as where you found this document.
 
 \section{Compiling the Kernel}
 
@@ -128,10 +129,10 @@ is not normally installed by default. Furthermore, each distribution tends to sp
 kernel in various ways. To build a new kernel from a particular distribution's kernel source
 package, you should consult the documentation for that distribution.
 
-If you are interested in kernel development or if you want to always use the latest kernel, I
+If you are interested in kernel development, or if you want to always use the latest kernel, I
 recommend that you download the stock kernel source from \url{http://www.kernel.org/}. This site
 is the official repository for Linux kernels. The kernels there are generic in the sense that
-they haven't been customized for any particular Linux distribution. As a result you may have to
+they haven't been customized for any particular Linux distribution. As a result you may need to
 configure the kernel (as described below) in a non-default way before it will boot your system
 cleanly.
 
@@ -158,12 +159,12 @@ can do this with a command such as:
 \end{commands}
 
 At the time of this writing, the version reported on Ubuntu Linux 20.04 is ``Linux version
-5.15.0-41-generic.'' Note that the experimental kernel I am proposing to install (5.18.12) is
+5.15.0-76-generic.'' Note that the experimental kernel I am proposing to install (5.18.12) is
 somewhat, but not extremely, newer than the one running on the system already. This is a good
 situation. The newer kernel will likely support all the features the current system expects,
-while not being so new as to introduce too many incompatibilities. This is particularly important
-if you are planning to run the experimental kernel on your development system (i.e., a
-one-machine configuration).
+while not being so new as to introduce incompatibilities. This is particularly important if you
+are planning to run the experimental kernel on your development system (i.e., a single-machine
+configuration).
 
 The kernel source is kept in a compressed archive called a \newterm{tarball}. For version
 5.18.12, the name of this archive is \filename{linux-5.18.12.tar.xz}. The last component of the
@@ -178,13 +179,13 @@ Once you download the tarball you will need to unpack it somewhere on your devel
 Unpacking the tarball will create a \filename{linux-5.18.12} directory beneath the current
 directory. While doing kernel development it is probably best to unpack the kernel somewhere in
 your home directory. That will make it easy for you to do development under your normal user
-account. You will need to be root to install the kernel, but you can configure and build it as
-an ordinary user.
+account. You will need to be root to install the kernel on your system (e.g., in a
+single-machine configuration), but you can configure and build it as an ordinary user.
 
 \subsection{The C Library }
 
-The application interface to the kernel is by way of the C library. In theory when the kernel is
-updated, the C library needs to be rebuilt so that it can take into account any changes in
+The application interface to the kernel is by way of the C library. In theory, when the kernel
+is updated, the C library needs to be rebuilt so that it can take into account any changes in
 kernel-specific data structures provided by the new kernel. Applications that link to the C
 library statically (that is \emph{not} using the dynamic shared library) would also need to be
 recompiled.
@@ -213,7 +214,7 @@ If this sounds complicated and unreliable you aren't the only person who thinks 
 been discussions among the kernel developers about how to ``fix'' this situation, but at the
 time of this writing I'm not sure how those discussions have concluded.
 
-% TODO: What is the current (summer 2022) status of this situation? The paragraphs above were
+% TODO: What is the current (summer 2023) status of this situation? The paragraphs above were
 % written quite some time ago.
 
 \subsection{Configuring}
@@ -242,7 +243,7 @@ To create a configuration based on some currently running kernel, you will need 
 a copy of the configuration file for the that kernel. Depending on how the running kernel was
 configured a compressed version of that file might be in \filename{/proc/config.gz}. My Ubuntu
 20.04 distribution stores a copy of the current configuration in
-\filename{/boot/config-5.15.0-41-generic} where 41 is the current (at the time of this writing)
+\filename{/boot/config-5.15.0-76-generic} where 76 is the current (at the time of this writing)
 release number of the Ubuntu kernel. You can read the file \filename{/proc/version} to find the
 exact version of the running kernel. That information might be useful for determining which
 configuration file is the most appropriate if there is more than one.
@@ -252,12 +253,12 @@ Copy the existing configuration file to the root of your new kernel source tree 
 for use with the new kernel. For example, if you are building a new kernel for your development
 system:
 \begin{commands}
-  \$ cp /boot/config-5.15.0-41-generic .config \\
+  \$ cp /boot/config-5.15.0-76-generic .config \\
   \$ make oldconfig
 \end{commands}
 
 If you are building a kernel to run on an experimental system you should create a
-\filename{.config} that is suitable for that system. Thus instead of copying the existing
+\filename{.config} that is suitable for that system. Thus, instead of copying the existing
 configuration of the development system, you should, in theory, instead take it from the
 experimental system. In practice, if you are using the same Linux distribution on both the
 development and experimental system, it is reasonable to use the configuration file from the
