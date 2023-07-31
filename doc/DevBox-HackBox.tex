@@ -57,7 +57,7 @@
 % ----------------------
 \title{DevBox and HackBox}
 \author{\copyright\ Copyright 2023 by Peter Chapin}
-\date{Last Revised: July 15, 2023}
+\date{Last Revised: July 31, 2023}
 \maketitle
 
 \tableofcontents
@@ -122,15 +122,16 @@ some conditions. When you launch a guest VM, look in the lower right corner of t
 you see a blue-gray box with a ``V'' then you are running normally. If you see a green turtle,
 you probably have Hyper-V enabled. You could disable Hyper-V to get better performance, but be
 aware that this will disable any other virtualization system you may have installed that relies
-on it (i.e., docker).
+on it (i.e., docker). My recommendation is that you don't worry about this too much unless you
+observe actual performance issues.
 
 If you still wish to proceed, begin by downloading VirtualBox from
 \url{http://www.virtualbox.org}. Be sure to download both the main installer for your system
 \emph{and} the Extension Pack. The Extension Pack adds important functionality that DevBox and
 HackBox requires. \emph{The virtual machines will likely not boot in their default configuration
   without the Extension Pack installed!} The current versions of DevBox and HackBox have been
-tested using VirtualBox version 7.0.8. They will probably work with other versions of VirtualBox
-that are close to that version.
+tested using VirtualBox version 7.0.10. They will probably work with other versions of
+VirtualBox that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
 to install that as well.
