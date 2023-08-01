@@ -19,3 +19,6 @@ driver/*.cmd
 driver/genericfs.ko
 driver/genericfs.mod.c
 driver/modules.order
+
+.DS_Store
+
