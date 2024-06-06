@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : DevBox-HackBox.tex
-% AUTHOR  : (C) Copyright 2023 by Peter Chapin
+% AUTHOR  : (C) Copyright 2024 by Peter Chapin
 % SUBJECT : DevBox and HackBox installation and use.
 %
 % DevBox and HackBox are virtual machine images for use during the development of GenericFS and
@@ -56,28 +56,27 @@
 % Title page information
 % ----------------------
 \title{DevBox and HackBox}
-\author{\copyright\ Copyright 2023 by Peter Chapin}
-\date{Last Revised: July 31, 2023}
+\author{\copyright\ Copyright 2024 by Peter Chapin}
+\date{Last Revised: June 6, 2024}
 \maketitle
 
 \tableofcontents
 
 \section{Introduction}
 
-When doing operating system work you ideally want to run your experimental software on a
+When doing operating system work, you ideally want to run your experimental software on a
 different computer than the one you use for development. An error in an operating system module
 or driver has the potential to corrupt the entire machine; testing on your development system
 may lead to headaches if such corruption occurs. Also, it is generally not possible to debug an
 operating system while running the debugger tool on the same machine. Two machines are needed so
 the debugger and the debugee can be properly separated.
 
-In this document I call the development system ``DevBox.'' It is a full desktop environment with
-all the usual tools and conveniences. It is on DevBox where you spend most of your time working
-and compiling your programs. It is on DevBox where you run source level debuggers.
+In this document I call the development system ``DevBox.'' It is a full environment with all the
+usual tools and conveniences. It is on DevBox where you spend most of your time working and
+compiling your programs. It is on DevBox where you run source level debuggers.
 
-The experimental system I call ``HackBox.'' It is not a full desktop environment and instead is
-minimally configured. The smaller, lighter configuration makes testing and error recovery
-easier.
+The experimental system I call ``HackBox.'' It is a simplified environment that is minimally
+configured. The smaller, lighter configuration makes testing and error recovery easier.
 
 This document describes how to set up the preconfigured DevBox and HackBox virtual machines
 provided for the operating systems course at Vermont State University. I describe how to install
@@ -96,42 +95,47 @@ machine you will need to first install VirtualBox on your system.
 
 \textit{Important note for macOS users!} The DevBox and HackBox virtual machines provided are
 x86\_64 guests. At the time of this writing, it is not easy to run these guests on Mac computers
-based on the Apple ARM processors (M1, M2, etc.). If you have such a computer, you will need to
-either find an x86\_64 system on which to run the virtual machines (Windows, Linux, or an
-x86\_64 based Mac), or you can use one of the lab machines.
+based on the Apple ARM processors (Apple Silicon: M1, M2, etc.). However, you can try installing
+the UTM virtualization app from the App Store and then running DevBox and HackBox in emulation
+mode rather than in virtualization mode\footnote{\todo{Add more details about how to import the
+virtual machines into UTM.}}. The performance of the guest systems will be significantly less,
+but they may still work adequately. Alternatively, you could either find an x86\_64 system on
+which to run the virtual machines (Windows, Linux, or an x86\_64 based Mac), or you can use one
+of the lab machines.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
-personal machine you should be sure you have at least 8 GiB of memory and 100 GiB of free disk
-space. You also need to have hardware virtualization support turned on in the BIOS of your host
-computer. Most machines come with this feature turned on by default, so if you are unsure you
-can probably ignore this issue until you have an actual problem. Older machines may require you
-to enter the BIOS and activate this feature. If your machine is extremely old it may not support
-hardware virtualization at all. Finally, DevBox and HackBox assume that your host has at least
-two cores.
+personal machine you should be sure you have at least 8 GiB of memory\footnote{Running on a 4
+GiB machine is possible, but you must first adjust the amount of memory allocated to the virtual
+machines.} and 100 GiB of free disk space. You also need to have hardware virtualization support
+turned on in the BIOS of your host computer. Most machines come with this feature turned on by
+default, so if you are unsure, you can probably ignore this issue until you have an actual
+problem. Older machines may require you to enter the BIOS and activate this feature. If your
+machine is extremely old it may not support hardware virtualization at all. Finally, DevBox and
+HackBox assume that your host has at least two cores.
 
 If the host does not meet the requirements above it may be possible to reconfigure the virtual
-machines so that they will work anyway. However you may have to sacrifice some features or
-endure sub-optimal performance in that case.
+machines so that they will work anyway. However, you may have to sacrifice some features or
+endure suboptimal performance in that case.
 
-If you are using a Windows machine with the Hyper-V service running, you may run into issues
-running VirtualBox. The Hyper-V service is a ``type 1'' hypervisor whereas VirtualBox is a
-``type 2'' hypervisor. These two types fundamentally conflict with each other. In fact, running
-VirtualBox on system with Hyper-V enabled didn't work at all until relatively recently. Modern
-VirtualBox versions \emph{do} work on top of Hyper-V, but performance can be very slow under
-some conditions. When you launch a guest VM, look in the lower right corner of the window. If
-you see a blue-gray box with a ``V'' then you are running normally. If you see a green turtle,
-you probably have Hyper-V enabled. You could disable Hyper-V to get better performance, but be
-aware that this will disable any other virtualization system you may have installed that relies
-on it (i.e., docker). My recommendation is that you don't worry about this too much unless you
-observe actual performance issues.
+If you are using a Windows machine with the Hyper-V service running, you \emph{may} run into
+issues running VirtualBox\footnote{This tends to be less of a problem with recent versions of
+VirtualBox.}. The Hyper-V service is a ``type 1'' hypervisor whereas VirtualBox is a ``type 2''
+hypervisor. These two types fundamentally conflict with each other. In fact, running VirtualBox
+on system with Hyper-V enabled didn't work at all until relatively recently. Modern VirtualBox
+versions \emph{do} work on top of Hyper-V, but performance can be very slow under some
+conditions. When you launch a guest VM, look in the lower right corner of the window. If you see
+a blue-gray box with a ``V'' then you are running normally. If you see a green turtle, you
+probably have Hyper-V enabled. You could disable Hyper-V to get better performance, but be aware
+that this will disable any other virtualization system you may have installed that relies on it
+(i.e., docker). My recommendation is that you don't worry about this too much unless you observe
+actual performance issues.
 
-If you still wish to proceed, begin by downloading VirtualBox from
-\url{http://www.virtualbox.org}. Be sure to download both the main installer for your system
-\emph{and} the Extension Pack. The Extension Pack adds important functionality that DevBox and
-HackBox requires. \emph{The virtual machines will likely not boot in their default configuration
-  without the Extension Pack installed!} The current versions of DevBox and HackBox have been
-tested using VirtualBox version 7.0.10. They will probably work with other versions of
-VirtualBox that are close to that version.
+Begin by downloading VirtualBox from \url{http://www.virtualbox.org}. Be sure to download both
+the main installer for your system \emph{and} the Extension Pack. The Extension Pack adds
+important functionality that DevBox and HackBox requires. \emph{The virtual machines will likely
+not boot in their default configuration without the Extension Pack installed!} The current
+versions of DevBox and HackBox have been tested using VirtualBox version 7.0.18. They will
+probably work with other versions of VirtualBox that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
 to install that as well.
@@ -144,17 +148,16 @@ includes not only the virtual hard disk (compressed) but also the virtual machin
 configuration. Once you import the virtual appliance into VirtualBox you can boot a virtual
 machine by just starting it as you might start a real computer.
 
-The virtual appliance file format is accepted by several different virtualization products.
-However, DevBox and HackBox assume they are running under VirtualBox, and, in particular, DevBox
-has the VirtualBox ``guest additions'' pre-installed.\footnote{HackBox does not have the guest
-  additions installed to simplify its kernel configuration.} The guest additions are a
-collection of software components that are loaded into the guest and that streamline the
-operation of the system.\footnote{The term ``guest'' refers to the system running inside the
-  virtual machine. The term ``host'' refers to the system running the virtualization software.}
+The virtual appliance file format is accepted by several virtualization products. However,
+DevBox, in particular, assumes it is running under VirtualBox because it has the VirtualBox
+``guest additions'' pre-installed.\footnote{HackBox does not have the guest additions installed
+to simplify its kernel configuration.} The guest additions are a collection of software
+components that are loaded into the guest and that streamline the operation of the
+system.\footnote{The term ``guest'' refers to the system running inside the virtual machine. The
+term ``host'' refers to the system running the virtualization software.}
 
 You may be able to run DevBox and HackBox using some other virtualization product such as
-VMware. However, you will probably have to do some additional configuration before it will work
-well.
+VMware. However, you may have to do some additional configuration before it will work well.
 
 To import the virtual appliances into VirtualBox follow the steps below.
 
@@ -163,8 +166,8 @@ To import the virtual appliances into VirtualBox follow the steps below.
 \item Download the file \texttt{DevBox-YYYY-MM-DD.ova} and similarly for HackBox. The names of
   the files contain the date when that version was released. The files also have an associated
   MD5 checksum that can be used to check for download errors. It is recommended that, if
-  possible, you \emph{do} verify the checksums. Because of the large sizes of the files, errors
-  during the download are more likely than usual..
+  possible, you verify the checksums. Because of the large sizes of the files, errors during the
+  download are more likely than usual.
 
 \item Start VirtualBox and select ``Import Appliance'' from the File menu. Follow the prompts.
   This will unpack the OVA file and add the virtual machine to VirtualBox's start menu. Repeat
@@ -173,14 +176,14 @@ To import the virtual appliances into VirtualBox follow the steps below.
 \end{enumerate}
 
 In principle no further configuration is necessary since the configurations of the virtual
-machines are contained in their original OVA files. However you might review the machine
+machines are contained in their original OVA files. However, you might review the machine
 settings and tweak them if desired. Note especially the amount of memory allocated to the
-virtual machines. \emph{DevBox is configured to use 3.0 GiB of memory and HackBox is configured
-  to use 0.5 GiB of memory. If your host computer has less than 8 GiB of memory you may want to
-  adjust the configured values downward.} If your host computer is well endowed with memory you
-might consider increasing the amount available to the virtual machines. A good rule of thumb is
-to allocate no more than 50\% of your system's physical memory to \emph{all} virtual machines
-taken together (that you intend to run at the same time).
+virtual machines. \emph{DevBox is configured to use 2.0 GiB of memory and HackBox is configured
+to use 0.5 GiB of memory. If your host computer has less than 8 GiB of memory you may want to
+adjust the configured values downward.} If your host computer is well-endowed with memory you
+might consider increasing the amount available to the virtual machines, particularly DevBox. A
+good rule of thumb is to allocate no more than 50\% of your system's physical memory to
+\emph{all} virtual machines taken together (that you intend to run at the same time).
 
 After you have imported the appliances you can delete the OVA files to save disk space. However,
 if you have sufficient disk space you might consider keeping the files in case you need to
@@ -189,19 +192,61 @@ long download.
 
 It is perfectly reasonable to boot both DevBox and HackBox at the same time; in fact this is
 often necessary for the kind of work you'll be doing. Each virtual machine runs in its own
-window. DevBox presents a full graphical desktop; HackBox is console only. The Linux
-distribution running inside both virtual machines is Ubuntu 20.04, 64~bit. DevBox is using the
-desktop version of Ubuntu and HackBox is using the server version of Ubuntu.
+window. Both DevBox and HackBox have console-only interfaces. HackBox lacks a graphical
+interface to simplify its configuration. DevBox, where you will do most of your work, could
+benefit from a graphical interface in principle. However, in an effort to reduce the resources
+required to run these VMs, and to minimize problems with graphics driver incompatibilities,
+DevBox also lacks a graphical interface. Tasks that require a GUI, such as browsing the web, can
+be done on the host system.
+
+The Linux distribution running inside both virtual machines is Ubuntu 24.04, 64~bit. Both VMs
+are running the server version of Ubuntu since that version is more resource-friendly.
+
+\section{Logging Into the Guests}
+\label{sec:logging-in}
+
+The configuration of DevBox and HackBox include a second network adapter that connects to the
+host-only network (normally named ``VirtualBox Host-Only Ethernet Adapter'' in VirtualBox's
+network manager tool). This network is managed entirely by VirtualBox and is not connected to
+the host's physical network interface. It is used to allow DevBox and HackBox to communicate
+with each other and with the host.
+
+By default, the host-only network is configured (by VirtualBox) to use the IP address range
+192.168.56.0/24, with the .1 address being attached to a virtual interface in the host. DevBox
+is configured to use the address 192.168.56.2 on its second Ethernet interface. HackBox is
+configured to use the address 192.168.56.3 on its second Ethernet interface. The first Ethernet
+interface on both virtual machines is connected to the NAT network managed by VirtualBox. This
+allows both virtual machines to access the Internet for updates and other purposes.
+
+Both DevBox and HackBox are running the OpenSSH server. This allows you to log in to the virtual
+machines from the host system using SSH. It is recommended that you use SSH in this way rather
+than using the console. There are several reasons for this.
+
+\begin{enumerate}
+  \item The console provided by VirtualBox is very limited. It is difficult to scroll back to
+    see previous output. It is difficult to copy and paste text. It is difficult to resize the
+    window. It is difficult to change fonts, colors, and other styling. The console is useful
+    for seeing the boot process and for interacting with the system when the network is not
+    available, but it is not a good general-purpose interface.
+
+  \item You probably already have an SSH client installed that you like and are familiar with
+    using.
+    
+  \item Many SSH clients have built-in support for file transfers. This can be very useful for
+    moving files between the host and the virtual machines. Even if your SSH client doesn't
+    support file transfers, you can use other tools such as WinSCP or \texttt{scp} (e.g., from
+    Cygwin or macOS) to transfer files.
+\end{enumerate}
 
 A facility is configured that allows DevBox and HackBox to communicate with each other via a
-serial connection (in addition to an internal network). The serial connection is needed for
+serial connection (in addition to the host-only network). The serial connection is needed for
 debugging the kernel on HackBox since when the kernel is being debugged the network will be
-non-functional. Thus both virtual machines have a virtual serial port configured using a named
+non-functional. Thus, both virtual machines have a virtual serial port configured using a named
 pipe for inter-machine communication. The format of this name depends on your host OS (the named
-pipe is managed by the host). Thus when you try to boot the machines for the first time you
-might see an error about being unable to create the necessary named pipe if the name format is
-incorrect for your host. On Linux and macOS systems use a name such as
-\filename{/tmp/hackserial}. On Windows systems use a name such as
+pipe is managed by the host). When you try to boot the machines for the first time you might see
+an error about being unable to create the necessary named pipe if the name format is incorrect
+for your host. On Linux and macOS systems use a name such as \filename{/tmp/hackserial}. On
+Windows systems use a name such as
 \filename{$\backslash\backslash$.$\backslash$pipe$\backslash$hackserial}. See
 \url{https://www.virtualbox.org/manual/ch03.html#serialports} for more information.
 
@@ -217,9 +262,10 @@ You should log in as this user. The student user can use \texttt{sudo} when nece
 administrative tasks.
 
 \section{Snapshots}
+\label{sec:snapsots}
 
 One major benefit to doing your development inside a virtual machine is that you can use
-VirtualBox to ``snapshot'' your system just before attempting any kind of dangerous or
+VirtualBox to \emph{snapshot} your system just before attempting any kind of dangerous or
 complicated operation. When you create a snapshot, VirtualBox remembers the entire state of the
 system. \emph{Any} change made after the snapshot is provisional. If the system becomes corrupt,
 you can just restore to the snapshot and undo all changes made since the snapshot was taken.
@@ -234,14 +280,14 @@ damage. For example, if you want to try building and installing a new version of
 library\ldots\ go ahead! Take a snapshot first, and if the result is a major disaster you can
 just roll back to where you started and try again. In the worst case scenario you could delete
 your virtual machine and re-import it from the original OVA file. Of course this rolls back all
-changes you ever made to the system but the base configuration will be fully restored.
+changes you ever made to the system, but the base configuration will be fully restored.
 
-It is likely you will snapshot HackBox frequently during your work. This is because HackBox will
-be running experimental kernels and kernel modules and is thus subject to random, spectacular
-failures. In contrast, DevBox should remain fairly stable since it only runs software blessed by
-Ubuntu and well established third party products. Because of HackBox's minimal configuration,
-snapshots of HackBox should be small and quick to make. This is a nice side effect of using two
-machines in this way.
+It is likely you will take snapshots of HackBox frequently during your work. This is because
+HackBox will be running experimental kernels and kernel modules and is thus subject to random,
+spectacular failures. In contrast, DevBox should remain fairly stable since it only runs
+software blessed by Ubuntu and well established third party products. Because of HackBox's
+minimal configuration, snapshots of HackBox should be small and quick to make. This is a nice
+side effect of using two machines in this way.
 
 \section{Basic Testing}
 
@@ -620,10 +666,8 @@ directory beneath your home directory on the remote host.
 \section{Shutting Down}
 
 When you are finished using the virtual machines \emph{do not just close the VirtualBox window!}
-Closing VirtualBox is equivalent to pulling the power plug on a real machine. Instead you should
-shut down the guest operating system properly. On DevBox in the upper right corner of the
-desktop there is a menu with a ``Shutdown'' option. On HackBox, as the root user, issue the
-command:
+Closing VirtualBox is equivalent to pulling the power plug on a real machine. Instead, you
+should shut down the guest operating system properly. As the root user, issue the command:
 \begin{Verbatim}
 # shutdown -h now
 \end{Verbatim}
