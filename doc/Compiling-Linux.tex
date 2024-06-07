@@ -1,6 +1,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE    : Compiling-Linux.tex
-% AUTHOR  : (C) Copyright 2023 by Peter Chapin
+% AUTHOR  : (C) Copyright 2024 by Peter Chapin
 % SUBJECT : Compiling Linux for kernel development.
 %
 % This document describes how to set up a Linux kernel for kernel study and development. It
@@ -62,8 +62,8 @@
 % Title page information
 % ----------------------
 \title{Compiling Linux}
-\author{\copyright\ Copyright 2023 by Peter Chapin}
-\date{Last Revised: July 31, 2023}
+\author{\copyright\ Copyright 2024 by Peter Chapin}
+\date{Last Revised: June 7, 2024}
 \maketitle
 
 % -----------------
@@ -91,15 +91,15 @@
 This document describes how to compile a Linux kernel for study and development. It contains
 specific instructions for compiling an experimental kernel and for configuring various kernel
 debugging and code browsing tools. This document was originally prepared to support the
-operating systems class at Vermont Statee University. Some of the information it contains
-targets that audience. However, much of the contents of this document would be useful to anyone
+operating systems class at Vermont State University. Some of the information it contains targets
+that audience. However, much of the contents of this document would be useful to anyone
 interested in studying the Linux kernel.
 
 It is possible to run an experimental kernel on the same system as is being used for
 development. However, this arrangement is not ideal since errors in the experimental kernel may
 cause corruption of the development environment. Ideally, then, one should configure two
 computers: a development system running a pre-built kernel and where all the programming tools
-execute (compilers, editors, etc), and a system for hacking that runs the experimental kernel
+execute (compilers, editors, etc.), and a system for hacking that runs the experimental kernel
 but is otherwise expendable.
 
 This document describes both single machine and dual machine arrangements. In the text below the
@@ -118,7 +118,7 @@ as where you found this document.
 
 This section describes how to compile the Linux kernel. It is intended to support individuals
 compiling the kernel for the first time. Note that this section assumes you are using a recent
-(5.x) version of the kernel.
+(6.x) version of the kernel.
 
 \subsection{Downloading and Unpacking}
 
@@ -142,14 +142,14 @@ you to do your development in your own fork and periodically merge upstream chan
 work. It would also allow you to share your work with a team of collaborators. However, using
 Git to do these things is outside the scope of this document.
 
-This document describes the build process specifically for kernel version 5.18.12 on 64~bit
-Ubuntu Linux 20.04. The commands below reflect this version number and platform. If you are
-using a different version or building on a different platform, modify the commands as
-appropriate. Note that you may need to install some extra packages on your system in order to do
-kernel development. This document does not describe which packages are necessary nor how to
-install them. Consult the documentation for your distribution for more information. If you are
-missing required packages, some of the commands below may not work. That is a sign that
-additional packages may be necessary.
+This document describes the build process specifically for kernel version 6.9.3 on 64~bit Ubuntu
+Linux 24.04. The commands below reflect this version number and platform. If you are using a
+different version or building on a different platform, modify the commands as appropriate. Note
+that you may need to install some extra packages on your system in order to do kernel
+development. This document does not describe which packages are necessary nor how to install
+them. Consult the documentation for your distribution for more information. If you are missing
+required packages, some commands below may not work. That is a sign that additional packages may
+be necessary.
 
 It is useful to check which version of the kernel is running on your intended target system. You
 can do this with a command such as:
@@ -158,31 +158,31 @@ can do this with a command such as:
   \$ cat /proc/version
 \end{commands}
 
-At the time of this writing, the version reported on Ubuntu Linux 20.04 is ``Linux version
-5.15.0-76-generic.'' Note that the experimental kernel I am proposing to install (5.18.12) is
-somewhat, but not extremely, newer than the one running on the system already. This is a good
+At the time of this writing, the version reported on Ubuntu Linux Server 24.04 is ``Linux
+version 6.8.0-35-generic.'' Note that the experimental kernel I am proposing to install (6.9.3)
+is somewhat, but not extremely, newer than the one running on the system already. This is a good
 situation. The newer kernel will likely support all the features the current system expects,
 while not being so new as to introduce incompatibilities. This is particularly important if you
 are planning to run the experimental kernel on your development system (i.e., a single-machine
 configuration).
 
-The kernel source is kept in a compressed archive called a \newterm{tarball}. For version
-5.18.12, the name of this archive is \filename{linux-5.18.12.tar.xz}. The last component of the
-version number is a release level. As 5.18 matures, it advances through several releases.
+The kernel source is kept in a compressed archive called a \newterm{tarball}. For version 6.9.3,
+the name of this archive is \filename{linux-6.9.3.tar.xz}. The last component of the version
+number is a release level. As 6.9 matures, it advances through several releases.
 
 Once you download the tarball you will need to unpack it somewhere on your development system.
 
 \begin{commands}
-  \$ unxz < linux-5.18.12.tar.xz | tar xf -
+  \$ unxz < linux-6.9.3.tar.xz | tar xf -
 \end{commands}
 
-Unpacking the tarball will create a \filename{linux-5.18.12} directory beneath the current
+Unpacking the tarball will create a \filename{linux-6.9.3} directory beneath the current
 directory. While doing kernel development it is probably best to unpack the kernel somewhere in
 your home directory. That will make it easy for you to do development under your normal user
 account. You will need to be root to install the kernel on your system (e.g., in a
 single-machine configuration), but you can configure and build it as an ordinary user.
 
-\subsection{The C Library }
+\subsection{The C Library}
 
 The application interface to the kernel is by way of the C library. In theory, when the kernel
 is updated, the C library needs to be rebuilt so that it can take into account any changes in
@@ -190,7 +190,7 @@ kernel-specific data structures provided by the new kernel. Applications that li
 library statically (that is \emph{not} using the dynamic shared library) would also need to be
 recompiled.
 
-In addition, some of the header files from the kernel source are usually also in
+In addition, some header files from the kernel source are usually also in
 \filename{/usr/include} where applications that need them (for example, applications making
 direct system calls) can access them. Again, in theory, when the kernel is updated those header
 files also need to be updated as well.
@@ -201,7 +201,7 @@ these things are also updated if necessary. When you manually update your kernel
 might have to update these things yourself.
 
 That said, changes in the kernel that necessitate rebuilding the C library are relatively rare.
-If the kernel you are installing is not too different than the one you are already using, you
+If the kernel you are installing is not too different from the one you are already using, you
 can probably get away without these additional complications.
 
 Some distributions use symbolic links from \filename{/usr/include} into the kernel source tree.
@@ -214,7 +214,7 @@ If this sounds complicated and unreliable you aren't the only person who thinks 
 been discussions among the kernel developers about how to ``fix'' this situation, but at the
 time of this writing I'm not sure how those discussions have concluded.
 
-% TODO: What is the current (summer 2023) status of this situation? The paragraphs above were
+% TODO: What is the current (summer 2024) status of this situation? The paragraphs above were
 % written quite some time ago.
 
 \subsection{Configuring}
@@ -225,13 +225,13 @@ features you want enabled in your kernel and which features should be compiled a
 can be loaded later. The configuration process creates two files: \filename{.config} in the root
 of the kernel source tree and \filename{autoconf.h} in
 \filename{include/generated}.\footnote{The \filename{autoconf.h} file is created as part of the
-  build process. It does not exist until you actually compile the kernel for the first time.}
-The file \filename{.config} gives the make utility access to your desired configuration. Make
-uses this information to control which files are compiled and how. The file
-\filename{autoconf.h} is included into the various kernel source files (and also in external
-modules) and gives the C compiler access to your desired configuration. Programmers can use
-\#ifdef/\#endif directives in the C source to selectively compile different code depending on
-the configuration options chosen.
+build process. It does not exist until you actually compile the kernel for the first time.} The
+file \filename{.config} gives the make utility access to your desired configuration. Make uses
+this information to control which files are compiled and how. The file \filename{autoconf.h} is
+included into the various kernel source files (and also in external modules) and gives the C
+compiler access to your desired configuration. Programmers can use \#ifdef/\#endif directives in
+the C source to selectively compile different code depending on the configuration options
+chosen.
 
 Your Linux distribution has most likely already created a kernel configuration that is
 compatible with the software environment of that distribution. For example the start-up scripts
@@ -242,18 +242,18 @@ closely as possible resulting in a minimum of problems.
 To create a configuration based on some currently running kernel, you will need to first obtain
 a copy of the configuration file for the that kernel. Depending on how the running kernel was
 configured a compressed version of that file might be in \filename{/proc/config.gz}. My Ubuntu
-20.04 distribution stores a copy of the current configuration in
-\filename{/boot/config-5.15.0-76-generic} where 76 is the current (at the time of this writing)
-release number of the Ubuntu kernel. You can read the file \filename{/proc/version} to find the
-exact version of the running kernel. That information might be useful for determining which
-configuration file is the most appropriate if there is more than one.
+24.04 distribution stores a copy of the current configuration in
+\filename{/boot/config-6.8.0-35-generic} where 35 is the current (at the time of this writing)
+release number of the Ubuntu-flavored kernel. You can read the file \filename{/proc/version} to
+find the exact version of the running kernel. That information might be useful for determining
+which configuration file is the most appropriate if there is more than one.
 
 Copy the existing configuration file to the root of your new kernel source tree under the name
 \filename{.config}. Then run the command \command{make oldconfig} to update that configuration
 for use with the new kernel. For example, if you are building a new kernel for your development
 system:
 \begin{commands}
-  \$ cp /boot/config-5.15.0-76-generic .config \\
+  \$ cp /boot/config-6.8.0-35-generic .config \\
   \$ make oldconfig
 \end{commands}
 
@@ -267,33 +267,36 @@ development system as the basis for your configuration.
 There are two kinds of issues that will be reported by the \command{make oldconfig} command.
 First, configuration options in the existing kernel that are not in the new kernel (because they
 have been removed or renamed, or because the existing kernel has been extended by the
-distribution) produce warnings when they can't be mapped into the new configuration. Second,
-configuration options in the new kernel that are not in the existing kernel (because they are
-new) will prompt you to choose between `Y' (meaning compile the feature into the kernel), `N'
-(meaning don't compile the feature), or in some cases `M' (meaning compile the feature as a
-module). You can just hit `enter' to accept the default in most cases.\footnote{You can also
-  select `?' to get help information about an option.}
+distribution) produce warnings when they can't be mapped into the new configuration.
+
+Second, configuration options in the new kernel that are not in the existing kernel (because
+they are new) will prompt you to choose between `Y' (meaning compile the feature into the
+kernel), `N' (meaning don't compile the feature), or in some cases `M' (meaning compile the
+feature as a module). You can just hit `enter' to accept the default in most cases.\footnote{You
+can also select `?' to get help information about an option.}
 
 Next, you may need to make a manual adjustment to the \filename{.config} file with respect to
 the list of trusted keys known to the kernel. Linux has a facility that allows modules to be
 digitally signed with signatures that are checked by the kernel when each module is loaded.
 During the kernel build process, a public/private key pair is automatically generated by the
 kernel for this purpose (although you can provide your own if desired). Internally, the kernel
-keeps a list of public keys known to it on a ``key ring.'' In addition to the generated (or
-provided) public key mentioned above, it is also possible to provide a list of other public keys
-as X.509 certificates in a PEM-formatted file. These keys are build into the kernel image during
-the build process. For our purposes we don't need to provide such a file, but you'll need to
-adjust the configuration to say so. Search the \filename{.config} file for the following two
-configuration parameters:
+keeps a list of public keys known to it on a ``key ring.''
+
+In addition to the generated (or provided) public key mentioned above, it is also possible to
+provide a list of other public keys as X.509 certificates in a PEM-formatted file. These keys
+are build into the kernel image during the build process. For our purposes we don't need to
+provide such a file, but you'll need to adjust the configuration to say so. Search the
+\filename{.config} file for the following three configuration parameters:
 
 \begin{commands}
+  CONFIG\_MODULE\_SIG\_KEY
   CONFIG\_SYSTEM\_TRUSTED\_KEYS
   CONFIG\_SYSTEM\_REVOCATION\_KEYS
 \end{commands}
 
 Set their values to the empty string (there may be non-existent files mentioned by default). The
 values for these parameters are leftovers from the kernel configuration you copied and thus
-reflect values being used by your running kernel's distributor.
+reflect values being used by your existing kernel's distributor.
 
 After the initial configuration process is complete you can use:
 \begin{commands}
@@ -306,9 +309,9 @@ OR
 
 to further refine the configuration. You can also use these commands to change the configuration
 later if desired. Note that \command{make menuconfig} requires that you have the curses terminal
-handling library available and \command{make gconfig} requires that you be running the X Window
-system with the appropriate GTK+ graphical libraries available. \todo{Is \texttt{make gconfig}
-  still supported? It seems to require an old version of the GTK+ libraries.}
+handling library available and \command{make gconfig} requires that you be running a graphical
+desktop with the appropriate GTK+ graphical libraries available. \todo{Is \texttt{make gconfig}
+still even supported? It seems to require an old version of the GTK+ libraries.}
 
 \textit{Warning!} If you modify the configuration with either of the commands above you will
 need to do a full kernel rebuild. This takes a long time so if you aren't prepared to do that be
@@ -325,19 +328,23 @@ some checks are so expensive that I do not recommend using them in a kernel buil
 use (although they may be acceptable on the experimental system). Consult the help information
 on each option for more information.
 
-If you wish to debug your kernel using a source level debugger you will want ``Kernel debugging''
-turned on in the ``Kernel hacking'' submenu (this is the default in the Ubuntu 20.04
-configuration). Be aware that this option greatly increases the amount of disk space required to
-build the kernel since every object file produced by the compiler contains debugging
-symbols.\footnote{Several gigabytes of disk space are required for a full build using
-  debugging.} This option is appropriate if you are creating a User Mode Linux kernel (see
+If you wish to debug your kernel using a source level debugger you will want a kernel debugging
+option turned on. To find this option, look under ``Kernel hacking'', then under ``Compile-time
+checks and compiler options'', and finally under ``Debug information''. Full debugging
+information is the default in the Ubuntu 24.04 configuration. However, be aware that this option
+greatly increases the amount of disk space required to build the kernel since every object file
+produced by the compiler contains debugging symbols.\footnote{Several gigabytes of disk space
+are required for a full build using debugging.}
+
+This option is appropriate if you are creating a User Mode Linux kernel (see
 Section~\ref{sec:UML}) or if you plan to use a kernel debugger (such as KGDB) or a tool to
-analyze kernel crash dumps.
+analyze kernel crash dumps. If you do not plan to use a source level debugger you can save a lot
+of disk space by setting the ``Debug information'' option to ``Disable''. 
 
 If you are building a kernel for use on an experimental system, and you wish to debug it
 remotely using KGDB, you will want to enable KGDB support in the kernel configuration in the
 ``Generic Kernel Debugging Instruments'' submenu beneath ``Kernel hacking'' (this is also the
-default in the Ubuntu 20.04 configuration). I say more about setting up and using KGDB in the
+default in the Ubuntu 24.04 configuration). I say more about setting up and using KGDB in the
 companion document \textit{DevBox and HackBox}.
 
 \subsection{Building}
@@ -349,7 +356,7 @@ To actually build the kernel and all of its supporting modules do:
 \end{commands}
 
 A kernel build takes a long time. There is a lot of code. Note that this will compile most
-drivers (as modules) even though your system will likely never use them. Nevertheless you may
+drivers (as modules) even though your system will likely never use them. Nevertheless, you may
 find some drivers useful, especially in an experimental context, so it doesn't hurt to build
 them all.
 
