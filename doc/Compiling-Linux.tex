@@ -284,12 +284,11 @@ keeps a list of public keys known to it on a ``key ring.''
 
 In addition to the generated (or provided) public key mentioned above, it is also possible to
 provide a list of other public keys as X.509 certificates in a PEM-formatted file. These keys
-are build into the kernel image during the build process. For our purposes we don't need to
+are built into the kernel image during the build process. For our purposes, we don't need to
 provide such a file, but you'll need to adjust the configuration to say so. Search the
-\filename{.config} file for the following three configuration parameters:
+\filename{.config} file for the following configuration parameters:
 
 \begin{commands}
-  CONFIG\_MODULE\_SIG\_KEY
   CONFIG\_SYSTEM\_TRUSTED\_KEYS
   CONFIG\_SYSTEM\_REVOCATION\_KEYS
 \end{commands}
@@ -331,10 +330,10 @@ on each option for more information.
 If you wish to debug your kernel using a source level debugger you will want a kernel debugging
 option turned on. To find this option, look under ``Kernel hacking'', then under ``Compile-time
 checks and compiler options'', and finally under ``Debug information''. Full debugging
-information is the default in the Ubuntu 24.04 configuration. However, be aware that this option
-greatly increases the amount of disk space required to build the kernel since every object file
-produced by the compiler contains debugging symbols.\footnote{Several gigabytes of disk space
-are required for a full build using debugging.}
+information is the default in the Ubuntu 24.04 configuration. However, \emph{be aware that this
+option greatly increases the amount of disk space required to build the kernel} since every
+object file produced by the compiler contains debugging symbols.\footnote{Several gigabytes of
+disk space are required for a full build using debugging.}
 
 This option is appropriate if you are creating a User Mode Linux kernel (see
 Section~\ref{sec:UML}) or if you plan to use a kernel debugger (such as KGDB) or a tool to
@@ -360,12 +359,11 @@ drivers (as modules) even though your system will likely never use them. Neverth
 find some drivers useful, especially in an experimental context, so it doesn't hurt to build
 them all.
 
-The build process may require various tools and libraries that you do not have installed on your
-system initially. If the build fails, look at the reason and then try to install the necessary
+The build process may require various libraries that you do not have installed on your system
+initially. If the build fails, look at the reason and then try to install the necessary
 package(s) to satisfy any missing requirements. Run the \command{make} command again to restart
-the build (it will pick up where it left off). You may need to do this several times. However,
-once you have all the necessary tools and libraries installed, future builds should go more
-smoothly.
+the build. It will pick up where it left off. You may need to do this several times. However,
+once you have all the necessary libraries installed, future builds should go more smoothly.
 
 \subsection{Installing}
 
