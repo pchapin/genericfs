@@ -395,7 +395,7 @@ modules, removing debugging information from the distributed modules will probab
 any issues.
 
 Another aspect of stripping debugging information is the effect it has on module signatures.
-Normally, the debugging information is covered by the signature. Thus the signature is
+Normally, the debugging information is covered by the signature. Thus, the signature is
 invalidated or removed (\todo{Which is it?}) if the debugging information is stripped afterward.
 However, the \command{make} command above strips debugging information first, before making the
 signatures, so you end up with signed, stripped modules as desired. \todo{The \command{file}
@@ -412,40 +412,38 @@ that system where they can be used. On the development system, after installing 
 following:
 \begin{commands}
   \# cd /lib/modules \\
-  \# tar cf - 5.18.12 | gzip > modules-5.18.12.tar.gz
+  \# tar cf - 6.9.3 | gzip > modules-6.9.3.tar.gz
 \end{commands}
 
-Then transfer \filename{modules-5.18.12.tar.gz} to the experimental system and unpack it there
+Then transfer \filename{modules-6.9.3.tar.gz} to the experimental system and unpack it there
 using:
 \begin{commands}
   \# cd /lib/modules \\
-  \# gunzip < modules-5.18.12.tar.gz | tar xf -
+  \# gunzip < modules-6.9.3.tar.gz | tar xf -
 \end{commands}
 
 You should next copy and rename three files from your freshly built kernel to the
-\filename{/boot} directory on the target system. For example, if you plan to run the new kernel
-on the development system (with paths relative to the root of the kernel source tree):
+\filename{/boot} directory on the target system. For example, using paths relative to the root
+of the kernel source tree, you might do the following:
 \begin{commands}
-  \# cp arch/x86/boot/bzImage /boot/vmlinuz-5.18.12 \\
-  \# cp .config /boot/config-5.18.12 \\
-  \# cp System.map /boot/System.map-5.18.12
+  \# scp arch/x86/boot/bzImage hackbox:/boot/vmlinuz-6.9.3 \\
+  \# scp .config hackbox:/boot/config-6.9.3 \\
+  \# scp System.map hackbox:/boot/System.map-6.9.3
 \end{commands}
 
 The \filename{System.map} file contains a list of all symbols in the kernel and their
 corresponding addresses. This can be useful for debugging and for interpreting stack traces in
 kernel oops messages. \todo{why is it important for this file to be in \filename{/boot}?}
 
-If you prepared a kernel for a separate experimental system you should instead transfer the
-files to that system and install them in the \filename{/boot} directory there. In that case you
-should \emph{not} install them to the \filename{/boot} directory of the development system since
-they will likely (and undesirably) be incorporated into the boot sequence the next time your
-distribution pushes a kernel update.
+If you prepared a kernel for a separate experimental system you should transfer the files to
+that system and install them in the \filename{/boot} directory there, as the commands above
+suggest.
 
-Finally I recommend using \command{ls -l} in the \filename{/boot} directory to check file
-ownership and permissions. Use the \command{chown} and \command{chmod} commands as appropriate
-to match the owners and permissions on the new files to those of the existing files. While this
-is not an essential step, it gives the installation a clean look and it may have importance from
-a security and system maintenance point of view.
+Finally, I recommend using \command{ls -l} in the \filename{/boot} directory of the experimental
+system to check file ownership and permissions. Use the \command{chown} and \command{chmod}
+commands as appropriate to match the owners and permissions on the new files to those of the
+existing files. While this is not an essential step, it gives the installation a clean look, and
+it may have importance from a security and system maintenance point of view.
 
 
 \subsubsection{Making \filename{initrd}}
@@ -453,7 +451,7 @@ a security and system maintenance point of view.
 Because modern Linux systems are so highly modularized it is possible that the kernel will need
 to load a module in order to read the file system. This creates a problem: how can it load a
 file system support module from the file system? To get around this, Linux boots in two phases.
-During the first phase the boot loader loads a pre-defined RAM disk image into memory along with
+During the first phase, the bootloader loads a pre-defined RAM disk image into memory along with
 the kernel. The kernel uses this RAM disk image as it's initial root file system. Certain
 programs and kernel modules can be loaded out of this RAM disk image. Once that is done, the
 root file system is changed to be the normal hard disk and the usual start-up scripts are
@@ -463,7 +461,7 @@ Manually creating this initial RAM disk is a somewhat involved procedure. Fortun
 utility program named \command{mkinitramfs} that does most of the work. On a Ubuntu system the
 command is:
 \begin{commands}
-  \# mkinitramfs -o /boot/initrd.img-5.18.12 5.18.12
+  \# mkinitramfs -o /boot/initrd.img-6.9.3 6.9.3
 \end{commands}
 
 This creates a RAM disk using the same modules as in the existing configuration, except that it
@@ -477,11 +475,11 @@ of those resources.
 
 \subsubsection{Configuring GRUB}
 
-Once you have \filename{vmlinuz-5.18.12} and \filename{initrd.img-5.18.12} in the
-\filename{/boot} directory of your target system you only need to update your boot loader to
-provide an option to boot the new kernel. This can be done by cloning the information for the
-existing kernel to a new menu entry and modify the names of the kernel image file and RAM disk
-file. The precise steps for doing this will depend on the boot loader you use.
+Once you have \filename{vmlinuz-6.9.3} and \filename{initrd.img-6.9.3} in the \filename{/boot}
+directory of your target system you only need to update your bootloader to provide an option to
+boot the new kernel. This can be done by cloning the information for the existing kernel to a
+new menu entry and modify the names of the kernel image file and RAM disk file. The precise
+steps for doing this will depend on the bootloader you use.
 
 On a Ubuntu system this is easily accomplished by using the \command{update-grub} command. This
 command searches \filename{/boot} for kernels installed there and composes a suitable GRUB menu
@@ -506,8 +504,8 @@ this is not the normal configuration (although it is sometimes useful in lab sit
   just compiled! First make a backup of the working kernel and be sure that you can boot the
   working kernel if necessary.
 
-  On Windows you can backup your boot floppy with the \command{diskcopy} command. Open a Windows
-  command prompt and do:
+  On Windows you can back up your boot floppy with the \command{diskcopy} command. Open a
+  Windows command prompt and do:
   \begin{commands}
     C:$\backslash$> diskcopy a: a:
   \end{commands}
@@ -572,7 +570,7 @@ software to create a virtual machine for a separate experimental system (as desc
 \textit{DevBox and HackBox}). However, if your primary machine is also running Linux, another
 approach is using User Mode Linux (UML).
 
-The Linux kernel is cross platform and with suitable cross compilers can be compiled on one
+The Linux kernel is cross-platform and with suitable cross-compilers can be compiled on one
 platform for execution on another. User Mode Linux is treated as a special ``platform.''
 However, the UML kernel runs on top of a host Linux system as an ordinary process. All access to
 hardware is translated into system calls made against the host system. UML thus allows you to
@@ -636,7 +634,7 @@ kernel version and options you want to use can be tricky. The reason for this is
 boot process, typical Linux configurations read various modules out of the root file system to
 enable support for features needed by the startup scripts. These modules must be compatible with
 the running kernel. If you are using a kernel version that is not compatible, the boot process
-is likely to fail, or at the very least report a large number of errors.
+is likely to fail, or at the very least report many errors.
 
 Sometimes you can download a UML kernel along with a matching root file system. However, as a
 kernel developer, the kernel you want to use is not arbitrary; it is a specially configured
@@ -666,7 +664,7 @@ root file system for kernel development. The procedure is as follows.
   journal created by the \command{-j} option) inside the \filename{root\_fs} file. You may need
   to specify the path to the \command{mk2efs} program; it is typically not in the path of
   ordinary users. The use of ext3, or some other journaled file system, is recommended. Since
-  this environment will be used for kernel development, kernel crashes are likely and it is nice
+  this environment will be used for kernel development, kernel crashes are likely, and it is nice
   to have the extra safety inherent in using a journaled file system.
 
 \item Mount the root file system so that you can access its contents. To do this you will need
@@ -719,7 +717,7 @@ as:
   \$ ps aux | grep linux
 \end{commands}
 to search for information about the running UML process. You will find several entries because
-UML is a multi-threaded application. Note the process ID of the first entry. Then launch the
+UML is a multithreaded application. Note the process ID of the first entry. Then launch the
 \command{gdb} debugger, attaching \command{gdb} to the process of interest. For example:
 \begin{commands}
   \$ gdb linux 1234
@@ -727,7 +725,7 @@ UML is a multi-threaded application. Note the process ID of the first entry. The
 where 1234 is the process ID of the running UML system.
 
 Once \command{gdb} has started you will want to execute the command \command{handle SIGUSR1
-  nostop noprint}. I'm not entirely sure what this command does exactly but it has something to
+  nostop noprint}. I'm not entirely sure what this command does exactly, but it has something to
 do with the way \command{gdb} deals with multiple threads. In particular, without this command
 \command{gdb} will stop the UML system frequently because of SIGUSR1 signals.
 
@@ -748,7 +746,7 @@ recommend using one or more of these tools when working with the Linux kernel so
 section I talk about how to configure a few of these tools for use with the Linux kernel.
 
 Note that you should only set up code browsing tools \emph{after} you've applied any patches to
-the source code. Patches will, of course, modify files and change the line numbers were
+the source code. Patches will, of course, modify files and change the line numbers where
 functions are defined, etc. If you index the source and then apply patches or make other changes
 you will want to reindex the source afterward. However, it shouldn't matter if you've compiled
 the kernel first or not. Code browsing tools are normally smart enough to ignore object files.
@@ -761,7 +759,7 @@ declarations and points-of-use for any symbol.
 
 The script below launches \command{cscope} on the Linux kernel. You should edit the three
 variable definitions at the top of the script to suite your system. The script does not index
-the entire kernel code base. In particular it skips the driver hierarchy and only indexes the
+the entire kernel code base. In particular, it skips the driver hierarchy and only indexes the
 x86 architecturally specific code. This makes the database size more manageable and reduces the
 number of duplicate declarations the tool returns.
 
@@ -771,7 +769,7 @@ number of duplicate declarations the tool returns.
 # Set a few variables. Change here for your system.
 CSCOPE_DIR=/home/student/cscope
 CSCOPE_FILE=$CSCOPE_DIR/cscope.files
-LNX=/home/student/linux-5.18.12
+LNX=/home/student/linux-6.9.3
 
 # If the database hasn't yet been created, then create it.
 if [ ! -f $CSCOPE_FILE ]; then
@@ -804,7 +802,7 @@ cscope -d
 \end{verbatim}
 
 In addition to using a dedicated code browsing tool, many programmer's text editors have a
-feature that allows them to read a ``tags'' file containing cross reference information about
+feature that allows them to read a ``tags'' file containing cross-reference information about
 entities declared and defined in a program. The script above uses the \command{ctags} command to
 create such a file for the \command{vim} editor.
 
