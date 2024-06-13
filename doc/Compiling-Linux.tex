@@ -407,25 +407,25 @@ kernel is used during the compilation of external modules for that kernel. Howev
 to install modules for a kernel even if you usually run a different kernel. Each kernel has its
 own private directory under \filename{/lib/modules}.
 
-If plan to run your new kernel on an experimental system you should also copy the modules to
-that system where they can be used. On the development system, after installing modules, do the
-following:
+If plan to run your new kernel on an experimental system (called "hackbox" in the commands
+below) you should also copy the modules to that system where they can be used. On the
+development system, after installing modules, do the following:
 \begin{commands}
   \# cd /lib/modules \\
-  \# tar cf - 6.9.3 | gzip > modules-6.9.3.tar.gz
+  \# tar cf - 6.9.3 | gzip > modules-6.9.3.tar.gz \\
+  \# scp modules-6.9.3.tar.gz hackbox:/lib/modules
 \end{commands}
 
-Then transfer \filename{modules-6.9.3.tar.gz} to the experimental system and unpack it there
-using:
+Unpack it on the experimental system using:
 \begin{commands}
   \# cd /lib/modules \\
   \# gunzip < modules-6.9.3.tar.gz | tar xf -
 \end{commands}
 
 You should next copy and rename three files from your freshly built kernel to the
-\filename{/boot} directory on the target system. For example, using paths relative to the root
-of the kernel source tree, you might do the following:
+\filename{/boot} directory on the experimental system. For example, you might do the following:
 \begin{commands}
+  \# cd /home/student/linux-6.9.3 \\
   \# scp arch/x86/boot/bzImage hackbox:/boot/vmlinuz-6.9.3 \\
   \# scp .config hackbox:/boot/config-6.9.3 \\
   \# scp System.map hackbox:/boot/System.map-6.9.3
@@ -433,11 +433,7 @@ of the kernel source tree, you might do the following:
 
 The \filename{System.map} file contains a list of all symbols in the kernel and their
 corresponding addresses. This can be useful for debugging and for interpreting stack traces in
-kernel oops messages. \todo{why is it important for this file to be in \filename{/boot}?}
-
-If you prepared a kernel for a separate experimental system you should transfer the files to
-that system and install them in the \filename{/boot} directory there, as the commands above
-suggest.
+kernel oops messages. \todo{Why is it important for this file to be in \filename{/boot}?}
 
 Finally, I recommend using \command{ls -l} in the \filename{/boot} directory of the experimental
 system to check file ownership and permissions. Use the \command{chown} and \command{chmod}
@@ -468,10 +464,10 @@ This creates a RAM disk using the same modules as in the existing configuration,
 will use the modules for the right kernel version. If you attempt to use the old RAM disk, it
 will contain modules for the old kernel which won't load into the new kernel.
 
-You should run this command on the target system where you plan to run the new kernel. Be sure
-you have the module library installed on that system, and be sure the new kernel configuration
-file is also installed in \filename{/boot}. The \command{mkinitramfs} command makes use of both
-of those resources.
+You should run this command on the experimental system where you plan to run the new kernel. Be
+sure you have the module library installed on that system, and be sure the new kernel
+configuration file is also installed in \filename{/boot}. The \command{mkinitramfs} command
+makes use of both of those resources.
 
 \subsubsection{Configuring GRUB}
 
@@ -487,7 +483,8 @@ for them.
 
 The next time you boot your system if you press the left-hand shift key early in the boot
 process you will see the GRUB boot menu. From there you can select your new kernel. \todo{Say
-  more about setting up GRUB options.}
+more about setting up GRUB options.} However, if the experimental kernel is the newest kernel on
+the system, it will be booted by default.
 
 \subsubsection{Installing on Floppy}
 
@@ -804,12 +801,12 @@ cscope -d
 In addition to using a dedicated code browsing tool, many programmer's text editors have a
 feature that allows them to read a ``tags'' file containing cross-reference information about
 entities declared and defined in a program. The script above uses the \command{ctags} command to
-create such a file for the \command{vim} editor.
+create such a file for the Vim editor.
 
 It is natural to create a tags file for your editor at the same time as you create the
-\command{cscope} database. This is because \command{cscope} will launch your editor
-(\command{vim} is the default) whenever you ask it to display a file. Once in the editor it is
-convenient to continue your browsing experience using editor tags commands.
+\command{cscope} database. This is because \command{cscope} will launch your editor (Vim is the
+default) whenever you ask it to display a file. Once in the editor it is convenient to continue
+your browsing experience using editor tags commands.
 
 If you are an \command{emacs} user instead, you can create a tags file for that editor with the
 \command{etags} command. Set the EDITOR environment variable to \command{emacs} to override

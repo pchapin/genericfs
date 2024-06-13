@@ -5,3 +5,7 @@ debugee
 Cygwin
 WinSCP
 scp
+initrd
+chown
+chmod
+mkinitramfs

@@ -683,8 +683,6 @@ This section contains some notes on how DevBox and HackBox were initially config
 intended to be helpful to anyone who wants to build the systems from scratch rather than
 downloading the preconfigured systems.
 
-\textit{TODO: Finish me!}
-
 Here is a list of packages that need to be installed in DevBox to build the kernel, assuming a
 Ubuntu 24.04 system:
 \begin{enumerate}
@@ -700,14 +698,46 @@ Ubuntu 24.04 system:
 
 These additional packages are needed for a more full-featured experience:
 \begin{enumerate}
-  \item \texttt{git}
   \item \texttt{minicom}
-  \item \texttt{rsync}
   \item \texttt{cscope}
-  \item \texttt{ctags}
-  \item \texttt{emacs}
-  \item \texttt{ssh}   % Already installed?
-  \item \texttt{vim}   % Already installed?
+  \item \texttt{universal-ctags}
+  \item \texttt{emacs-nox}
 \end{enumerate}
+
+Note that the \texttt{emacs-nox} package is the version of Emacs that runs in a terminal.
+However, it will also install the postfix mail transport agent as a dependency. During the
+installation of postfix, you will be asked what kind of mail configuration you want. Choose
+``Local only'' to create a configuration that will only deliver mail to users on DevBox and not
+attempt to use the network. This can be changed later, if desired.
+
+To complete the installation of Emacs, it is recommended to crate a suitable \filename{.emacs}
+file. It would also be reasonable to create a suitable \filename{.vimrc} file for those who
+prefer to use Vim.
+
+It is convenient to allow the root user to use SSH to log in and copy files. To do this it is
+first necessary to set root a password since Ubuntu, by default, has a locked root account (it
+relies on the administrative user using \command{sudo} to raise privilege when necessary). On
+both DevBox and HackBox, use the following command:
+\begin{Verbatim}
+  $ sudo passwd root
+\end{Verbatim}
+
+Then edit the file \texttt{/etc/ssh/sshd\_config} and change the line:
+\begin{Verbatim}
+  PermitRootLogin prohibit-password
+\end{Verbatim}
+to
+\begin{Verbatim}
+  PermitRootLogin yes
+\end{Verbatim}
+
+Finally, restart the SSH server with the command:
+\begin{Verbatim}
+  # systemctl restart ssh
+\end{Verbatim}
+
+Normally root access via SSH is disallowed for security reasons. However, in a virtual machine
+environment it is often convenient to have this capability, and the security concerns area
+greatly reduced by the isolated nature of the environment.
 
 \end{document}
