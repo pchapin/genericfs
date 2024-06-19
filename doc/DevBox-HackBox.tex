@@ -18,7 +18,7 @@
 % ++++++++++++++++++++++++++++++++
 % Preamble and global declarations
 % ++++++++++++++++++++++++++++++++
-\documentclass[twocolumn]{article}
+\documentclass{article}
 
 \usepackage{fancyvrb}
 \usepackage{hyperref}
@@ -298,48 +298,35 @@ opportunity to exercise the two systems.
 
 \begin{enumerate}
 
-\item If any virtual machine is running, shut it down. If you are not running VirtualBox, start
-  the VirtualBox application. Either way, after this step, you should be looking at VirtualBox's
-  window that lists your configured virtual machines, but you should have no virtual machine
-  actually running.
+\item Boot DevBox. Use an SSH client of your choice on your host to connect to DevBox at address
+192.168.56.2. Log in as the user student.
 
-\item Boot DevBox. Log in as the user student. Open a terminal window.
-
-\item Boot HackBox. Log in as the user student. At the time of this writing an error message
-  appears on HackBox's console shortly after it boots: \texttt{Dev loop8: unable to read RDB
-    block 8}. This is a known issue with the 5.18 kernel that has been discussed on the Linux
-  Kernel Mailing List (see: \url{https://lkml.org/lkml/2022/7/5/1864}). The problem is related
-  to the loopback block device driver and is not significant for our purposes. Ignore it.
+\item Boot HackBox. Use an SSH client of your choice on your host to connect to HackBox at
+address 192.168.56.3. Log in as the user student.
 
 \item Check that you have network connectivity between the two systems. For example, on DevBox
   issue the command:
 \begin{Verbatim}
 $ ping hackbox
 \end{Verbatim}
-  Run the corresponding command on HackBox to ping DevBox.
+  Run the corresponding command on HackBox to ping DevBox. This ensures the two systems can
+  communicate with each other over the host-only network.
 
-  Both virtual machines can communicate across an internal network managed entirely by
-  VirtualBox. They have statically assigned IP addresses (10.1.1.1/24 for DevBox and 10.1.1.2/24
-  for HackBox) with appropriate entries in \texttt{/etc/hosts} allowing the machines to
-  communicate via unqualified names. This ping check allows you to verify that this network
-  connectivity is functional.
-
-  Both virtual machines also have a second network interface defined that connects via a network
-  address translator (NAT) to the host's physical network interface. This gives both machines
-  access to the Internet for updates and other purposes.
+  Both systems also have a second network interface defined that connects via a network address
+  translator (NAT) to the host's physical network interface. This gives both machines access to
+  the Internet for updates and other purposes.
 
 \item On DevBox issue the command:
 \begin{Verbatim}
 $ ssh hackbox
 \end{Verbatim}
   This should connect to the ssh server on HackBox over the internal network and allow you to
-  log in again as student. You can use the \texttt{scp} command to transfer files between the
-  two systems. Note that DevBox is not running an ssh server so all file transfer commands must
-  be initiated from the DevBox side.
+  log in (again) as student. You can use the \texttt{scp} command to transfer files between the
+  two systems.
 
   Once you've demonstrated that ssh is working you can log out.
 
-\item On DevBox issue the command:
+\item \textit{Optional!} On DevBox issue the command:
 \begin{Verbatim}
 $ minicom
 \end{Verbatim}
@@ -348,11 +335,11 @@ $ minicom
   running an \texttt{agetty} process on its ttyS0 serial port to support logins.
 
   Minicom is a simple terminal program for Linux that can be used to interact with serial ports.
-  After starting minicom you should be able to hit Enter and see a login prompt from HackBox.
+  After starting Minicom you should be able to hit Enter and see a login prompt from HackBox.
   Try logging in to verify that this works.
 
   When you are done experimenting with this, log out of HackBox and then type CTRL+A followed by
-  X in minicom to exit minicom.
+  X in Minicom to exit Minicom.
 
 \item Check that you are using the correct kernel on HackBox by issuing the command (on
   HackBox's console):
@@ -360,37 +347,37 @@ $ minicom
 $ cat /proc/version
 \end{Verbatim}
   This command reads a file in the ``magic'' proc file system that, in this case, reports
-  information about the kernel version you are using. It should say 5.18.12. This is the
+  information about the kernel version you are using. It should say 6.9.3. This is the
   experimental kernel we will be working with.
 
 \item On DevBox use the file manager to browse
 \begin{Verbatim}
-/home/student/linux-5.18.12
+/home/student/linux-6.9.3
 \end{Verbatim}
   This is the source code for the experimental kernel. You will become familiar with its
   organization in the future, but a quick look now is a good first step toward that goal.
 
 \item On DevBox in a terminal window change to
 \begin{Verbatim}
-/home/student/linux-5.18.12
+/home/student/linux-6.9.3
 \end{Verbatim}
-  and issue the command \texttt{make menuconfig} to view the kernel configuration menu. The
+  and issue the command \command{make menuconfig} to view the kernel configuration menu. The
   configuration you are looking at is the configuration used the last time the kernel was
   compiled. It represents the current configuration of the experimental kernel running on
   HackBox.\footnote{For full details about how to compile Linux, see my companion document
-    \textit{Compiling Linux} in the same location where you found this document.} Look around to
+  \textit{Compiling Linux} in the same location where you found this document.} Look around to
   see what kinds of options are available. If you change anything, do \emph{not} save your
   changes. If you save any changes you will end up doing a full kernel rebuild the next time you
   try to compile it. That takes a very long time.
 
-  Once you exit the configuration menu, look at the file \texttt{.config} and the file
+  Once you exit the configuration menu, look at the file \filename{.config} and the file
 \begin{Verbatim}
 include/generated/autoconf.h
 \end{Verbatim}
   to see the results of the configuration process (these files were created previously when the
-  experimental kernel was prepared for HackBox). The \texttt{.config} file is used by the kernel
+  experimental kernel was prepared for HackBox). The \filename{.config} file is used by the kernel
   build system to control which source files need to be compiled and how. The
-  \texttt{autoconf.h} header is included into source files that need to distinguish between
+  \filename{autoconf.h} header is included into source files that need to distinguish between
   various configuration options.
 \end{enumerate}
 
@@ -406,58 +393,56 @@ this section there will be no lingering effect on either system.
 \item In the VirtualBox console with HackBox in an ``Off'' state, select the HackBox virtual
   machine and take a snapshot of its current state.
 
-\item Edit the file \texttt{init/version.c}\footnote{Relative paths are relative to the root of
-    the kernel source tree unless context indicates otherwise.} and change the value of
-  \texttt{linux\_proc\_banner} to include some distinctive text. For example you might add
-  something like ``experimental'' to the existing banner. This will change the contents of
-  \texttt{/proc/version} once the modified kernel is running. I recommend that you first create
-  a backup copy of the original file using a command such as:
+\item On DevBox edit the file \filename{init/version.c}\footnote{Relative paths are relative to
+    the root of the kernel source tree unless context indicates otherwise.} and change the value
+    of \texttt{linux\_proc\_banner} to include some distinctive text. For example, you might add
+    something like ``experimental'' to the existing banner. This will change the contents of
+    \filename{/proc/version} once the modified kernel is running. I recommend that you first
+    create a backup copy of the original file using a command such as:
 \begin{verbatim}
 $ cp version.c version.c.orig
 \end{verbatim}
 
   This makes it easy to restore the original file later.
 
-\item Issue the command \texttt{make} at the root of the kernel source tree to build a new
+\item Issue the command \command{make} at the root of the kernel source tree to build a new
   kernel reflecting your changes. This should not take too long because the kernel has already
-  been built and \texttt{make} should realize that most of the object files are up to date (even
-  so it can take several minutes to do this). If \texttt{make} appears to be recompiling
+  been built and \command{make} should realize that most of the object files are up-to-date
+  (however, it can take several minutes to do this). If \command{make} appears to be recompiling
   everything something is wrong (possibly you accidentally saved changes when looking at the
   configuration earlier). In that case just cancel the build and don't worry about this step to
   save time. You will need to suffer the full build eventually, however, but it might take hours
   depending on your hardware.
 
-\item Using \command{scp}, transfer the file:
+\item Using \command{scp}, transfer the new image to HackBox:
 \begin{Verbatim}
-arch/x86/boot/bzImage
+$ scp arch/x86/boot/bzImage root@hackbox:/boot/vmlinuz-6.9.3
 \end{Verbatim}
-  \emph{to HackBox} and on top of the file:
-\begin{Verbatim}
-/boot/vmlinuz-5.18.12
-\end{Verbatim}
-  on that system. This replaces the boot experimental kernel with the version you just compiled
-  containing your changed banner. It's good practice to make a backup copy of
-  \texttt{vmlinuz-5.18.12} first.
+  This replaces the boot experimental kernel on HackBox with the version you just compiled
+  containing your changed banner. Its good practice to make a backup copy of
+  \filename{vmlinuz-6.9.3} first.
 
-\item Reboot HackBox into the experimental kernel and verify that \texttt{/proc/version} has
+\item Reboot HackBox into the experimental kernel and verify that \filename{/proc/version} has
   changed as expected. You do not need to update the \command{grub} configuration in this case
-  since you are overwriting the experimental kernel with a new version. You can use the command:
+  since you are overwriting the experimental kernel with a new version. You can use the command
+  on HackBox to reboot HackBox immediately:
 \begin{Verbatim}
 $ sudo shutdown -r now
 \end{Verbatim}
-  to reboot HackBox immediately. The \texttt{-r} option means ``reboot.''
+  The \texttt{-r} option means ``reboot.''
 
 \end{enumerate}
 
-When you are done with the steps above you can shutdown HackBox using a command such as:
+When you are done with the steps above you can shut down DevBox and HackBox using a command such
+as:
 \begin{Verbatim}
 $ sudo shutdown -h now
 \end{Verbatim}
 Here the \texttt{-h} option means ``halt.'' After the system shuts down you can restore to the
 snapshot to undo any changes made during this session and put the system back into its initial
 state. You may find it useful to do this after each experiment.\footnote{Avoid storing anything
-  of importance on HackBox. Use DevBox for all files you wish to keep, and even then back them
-  up regularly by transferring important files elsewhere.}
+of importance on HackBox. Use DevBox for all files you wish to keep, and even then back them up
+regularly by transferring important files elsewhere.}
 
 You should also restore the file \filename{version.c} in the source code to its original form.
 This step isn't strictly necessary in this case since this is a minor, inconsequential change.
@@ -475,7 +460,7 @@ this will be provided in the appropriate lab.
 
 In addition to Linux, we may also experiment with an operating system written by a team of
 Vermont Technical College students for their 2008/2009 senior project. That system is called
-Phoenix. Using Phoenix does not require HackBox at all. Instead it runs inside a virtualization
+Phoenix. Using Phoenix does not require HackBox at all. Instead, it runs inside a virtualization
 product called Bochs running inside the DevBox VM. Yes, this amounts to a nested virtual
 machine, but unlike the situation with Hyper-V described earlier Bochs is an ordinary user
 process and doesn't introduce the same complications of trying to use a type 1 and type 2
@@ -497,14 +482,14 @@ $ source useOW.sh
 \end{Verbatim}
   to configure the environment of your terminal to make the Open Watcom C/C++ compilers
   available. Phoenix is built with Open Watcom. You might want to change the title on the
-  terminal to reflect this so you don't forget (use the ``Terminal $\rightarrow$ Set Title''
+  terminal to reflect this, so you don't forget (use the ``Terminal $\rightarrow$ Set Title''
   menu item on the terminal program).
 
-\item Use the \texttt{makeandrun.sh} script in the top level Phoenix folder. That script creates
-  a Phoenix boot disk image containing the system and several sample programs, and then launches
-  Phoenix using the Bochs simulator. Bochs has been configured with debugging features turned on
-  so when it starts it will produce a command prompt. Type ``continue'' to begin the simulation
-  without interruption.
+\item Use the \filename{makeandrun.sh} script in the top level Phoenix folder. That script
+  creates a Phoenix boot disk image containing the system and several sample programs, and then
+  launches Phoenix using the Bochs simulator. Bochs has been configured with debugging features
+  turned on so when it starts it will produce a command prompt. Type ``continue'' to begin the
+  simulation without interruption.
 
   When Phoenix boots you will be prompted with a menu of programs on the boot disk. Select one
   of them to see Phoenix in action. You can power off the Bochs simulation (upper right corner
@@ -514,13 +499,13 @@ $ source useOW.sh
 
 \section{Using KGDB and KDB}
 
-KGDB is a kernel debugger that allows you to connect \texttt{gdb} running on DevBox to the
+KGDB is a kernel debugger that allows you to connect \command{gdb} running on DevBox to the
 kernel running on HackBox. Using this tool is a bit intricate. Here I outline the basic
 procedure. See other resources for additional information.
 
 When you want to use the debugging tools you must log into HackBox by way of a serial terminal.
 Do \emph{not} use SSH and do not use the console. While the HackBox kernel is being debugged the
-network will not function normally. Furthermore the debugger on DevBox has no way to transmit
+network will not function normally. Furthermore, the debugger on DevBox has no way to transmit
 data over the console; it needs to use an old style serial port.
 
 \emph{I recommend taking a snapshot of HackBox before your debugging session in case you
@@ -531,14 +516,13 @@ On DevBox use the command:
 $ minicom
 \end{Verbatim}
 This command starts the terminal program. It has been preconfigured to connect to
-\texttt{/dev/ttyS0} which is attached to HackBox's serial port of the same name by way of a
+\filename{/dev/ttyS0} which is attached to HackBox's serial port of the same name by way of a
 host-level named pipe. You can hit the Enter key to get a login prompt from HackBox. Log in as
 the user student.
 
 When you are ready to debug, you must first activate KGDB on HackBox. Use a command such as:
 \begin{Verbatim}
-# echo ttyS0 > \
-   /sys/module/kgdboc/parameters/kgdboc
+# echo ttyS0 > /sys/module/kgdboc/parameters/kgdboc
 \end{Verbatim}
 This informs the KGDB ``over console'' driver that it should use ttyS0 for communication.
 Without this step KGDB will effectively be turned off even if it has been compiled into the
@@ -549,10 +533,10 @@ There are three ways to break into the kernel.
 \begin{enumerate}
 \item If the kernel takes an exception it will stop and wait for the debugger to attach.
 \item You can issue a SysRq-g sequence in the terminal program.
-\item You can echo the letter 'g' into the file \texttt{/proc/\-sysrq-trigger}.
+\item You can echo the letter `g' into the file \texttt{/proc/\-sysrq-trigger}.
 \end{enumerate}
 
-The second option can be done from minicom by typing Ctrl+Afg. Use the following command to
+The second option can be done from Minicom by typing Ctrl+Afg. Use the following command to
 execute the third option:
 \begin{Verbatim}
 # echo g > /proc/sysrq-trigger
@@ -560,7 +544,7 @@ execute the third option:
 
 After breaking into the kernel you should see a KDB prompt on your terminal. At this point the
 kernel on HackBox is frozen awaiting your debugging pleasure. You could enter KDB commands, but
-it is generally more interesting to use \texttt{gdb}.
+it is generally more interesting to use \command{gdb}.
 
 On DevBox in a separate command window, go into the top level of the Linux source tree and use
 the command:
@@ -581,7 +565,7 @@ You can now use \texttt{gdb} debugging commands to debug the HackBox kernel. Not
 see some ``junk'' appearing on the previously opened terminal. They are remote debugging
 protocol packets; you can ignore them.
 
-To return to normal operation first exit \texttt{gdb} with the command:
+To return to normal operation first exit \command{gdb} with the command:
 \begin{Verbatim}
 (gdb) quit
 \end{Verbatim}
@@ -600,21 +584,22 @@ system is in a consistent (non-destroyed) state.
 \section{Making Backups}
 
 Most recovery operations such as restoring to a snapshot or re-importing the original OVA file
-will entail the lose of some or all of your work. Thus I strongly recommend that you back up
-your work often. This can be done by using a special backup script I created. To use it simply
-execute \texttt{backup} at a command prompt.
+will entail the loss of some or all of your work. Thus, I strongly recommend that you back up
+your work often. This can be done by using a special backup script. To use it simply execute
+\command{backup} at a command prompt.
 
-It is extremely important to understand that The \texttt{backup} script only backs up the files
-in the \texttt{cis-4020} folder. This means the backup archives are relatively small but it also
-means that any files you put elsewhere on the system will not be backed up. \emph{I therefor
-  strongly recommend that you store all course materials in the cis-4020 folder.} Be aware that
-configuration changes you make, for example to the desktop on DevBox, are not backed up.
+It is extremely important to understand that The \command{backup} script only backs up the
+files in the \filename{cis-4020} folder. This means the backup archives are relatively small,
+but it also means that any files you put elsewhere on the system will not be backed up. \emph{I
+therefor strongly recommend that you store all course materials in the cis-4020 folder.} Be
+aware that configuration changes you make, for example to the desktop on DevBox, are not backed
+up.
 
-Once the \texttt{backup} script has created the archive it will ask you if you want to transfer
-that archive to \texttt{lemuria}. Assuming you have an account on that system you can use
-\texttt{lemuria} as a repository of backups. If you do not transfer the backup file, the script
-will leave it in student's home directory where you can transfer it some other way (for example
-as an email attachment using webmail).
+Once the \command{backup} script has created the archive it will ask you if you want to transfer
+that archive to Lemuria. Assuming you have an account on that system you can use Lemuria as a
+repository of backups. If you do not transfer the backup file, the script will leave it in
+student's home directory where you can transfer it some other way (for example as an email
+attachment using webmail).
 
 You should definitely transfer the backup archives off the virtual machine. The point of the
 backups are to save your work in case the VM is destroyed. Keeping the backup archives on the VM
@@ -634,8 +619,8 @@ Done
 Transfer to lemuria? [y/n] \textit{y}
 Username: \textit{pchapin}
 Password: 
-backup-cis-4020-2022-07-19.tar.gz                             100%   38KB  38.3KB/s   00:00    
-Transfer successful. Removing ~/backup-cis-4020-2022-07-19.tar.gz
+backup-cis-4020-2024-06-19.tar.gz                             100%   38KB  38.3KB/s   00:00    
+Transfer successful. Removing ~/backup-cis-4020-2024-06-19.tar.gz
 student@devbox:~$
 \end{Verbatim}
 \caption{Sample Backup Session}
@@ -643,8 +628,8 @@ student@devbox:~$
 \end{figure*}
 
 Another, more elegant way to transfer a course directory to another host is to use the
-\texttt{rsync} program. This program only copies files that have changed and is thus often
-faster than transferring an entire archive (even a compressed archive). The \texttt{rsync}
+\command{rsync} program. This program only copies files that have changed and is thus often
+faster than transferring an entire archive (even a compressed archive). The \command{rsync}
 program will add and remove files and directories on the target as necessary and, in archive
 mode, it even copies file permissions and date/time information. First move to student's home
 directory. Then do
@@ -653,14 +638,14 @@ $ rsync -vaz --delete \
     cis-4020 username@lemuria.cis.vermontstate.edu:
 \end{Verbatim}
 
-The \texttt{--delete} option tells \texttt{rsync} to remove files on the target that are not in
-the source. The \texttt{-z} option specifies compressed mode; this is particularly useful if you
+The \command{--delete} option tells \command{rsync} to remove files on the target that are not in
+the source. The \command{-z} option specifies compressed mode; this is particularly useful if you
 are on a low speed network connection since it will reduce the amount of network traffic
-required. See the \texttt{rsync} manual page for more information.
+required. See the \command{rsync} manual page for more information.
 
-Note that the \texttt{rsync} command above uses ssh as the underlying transport. Thus you will
+Note that the \command{rsync} command above uses ssh as the underlying transport. Thus, you will
 be prompted for your password, yet your password will not appear on the network unencrypted.
-Note also that the \texttt{rsync} command above will create (or update) a \texttt{cis-4020}
+Note also that the \command{rsync} command above will create (or update) a \filename{cis-4020}
 directory beneath your home directory on the remote host.
 
 \section{Shutting Down}
@@ -681,7 +666,8 @@ state. This is usually quicker than booting the system from scratch.
 
 This section contains some notes on how DevBox and HackBox were initially configured. They are
 intended to be helpful to anyone who wants to build the systems from scratch rather than
-downloading the preconfigured systems.
+downloading the preconfigured systems. If you are only interested in using DevBox and HackBox,
+you can ignore this section.
 
 Here is a list of packages that need to be installed in DevBox to build the kernel, assuming a
 Ubuntu 24.04 system:
@@ -715,14 +701,14 @@ file. It would also be reasonable to create a suitable \filename{.vimrc} file fo
 prefer to use Vim.
 
 It is convenient to allow the root user to use SSH to log in and copy files. To do this it is
-first necessary to set root a password since Ubuntu, by default, has a locked root account (it
-relies on the administrative user using \command{sudo} to raise privilege when necessary). On
-both DevBox and HackBox, use the following command:
+first necessary to set a password for root since Ubuntu, by default, has a locked root account
+(it relies on the administrative user using \command{sudo} to raise privilege when necessary).
+On both DevBox and HackBox, use the following command:
 \begin{Verbatim}
   $ sudo passwd root
 \end{Verbatim}
 
-Then edit the file \texttt{/etc/ssh/sshd\_config} and change the line:
+Then edit the file \filename{/etc/ssh/sshd\_config} and change the line:
 \begin{Verbatim}
   PermitRootLogin prohibit-password
 \end{Verbatim}

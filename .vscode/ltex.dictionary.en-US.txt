@@ -9,3 +9,6 @@ initrd
 chown
 chmod
 mkinitramfs
+Minicom
+Bochs
+Watcom
