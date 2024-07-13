@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % FILE   : GenericFS.tex
 % SUBJECT: Description of the Generic File System for Linux
-% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
+% AUTHOR : (C) Copyright 2024 by Peter C. Chapin
 %
 % This document describes how to build, debug, and test file system modules in Linux using the
 % GenericFS file system as a complete example. Readers are invited to experiment with GenericFS
@@ -13,11 +13,10 @@
 %
 % Send comments or bug reports to:
 %
-%    Peter C. Chapin
-%    Computer Information Systems
-%    Vermont Technical College
+%    Peter Chapin
+%    Vermont State University
 %    Williston, VT 05495
-%    PChapin@vtc.vsc.edu
+%    peter.chapin@vermontstate.edu
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %+++++++++++++++++++++++++++++++++
@@ -27,6 +26,9 @@
 \usepackage{listings}
 \usepackage[pdftex]{graphics}
 \usepackage{hyperref}
+\usepackage{inconsolata}
+\usepackage{color}
+
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1.75ex plus0.5ex minus0.5ex}
 
@@ -49,29 +51,37 @@
 
 % Various macros.
 \newcommand{\newterm}[1]{\emph{#1}}
-\newcommand{\code}[1]{\lstinline!#1!}
+\newcommand{\code}[1]{\lstinline@#1@}
 \newcommand{\filename}[1]{\texttt{#1}}
 \newcommand{\command}[1]{\texttt{#1}}
 \newcommand{\GenericFS}{\texttt{GenericFS}}
 \newcommand{\todo}[1]{\textit{TODO: #1}}
+
+% The following are settings for the listings package.
+\lstdefinestyle{customconsolas}{
+    basicstyle=\ttfamily, % Use \ttfamily to switch to monospaced font
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    columns=fullflexible,
+    basicstyle=\fontsize{10}{11}\selectfont\ttfamily
+}
+\lstset{language=C, style=customconsolas}
+
 
 %++++++++++++++++++++
 % The document itself
 %++++++++++++++++++++
 \begin{document}
 
-% The following are settings for the listings package.
-\lstset{language=C,
-%        basicstyle=\small,
-        stringstyle=\ttfamily,
-        showstringspaces=false}
-
 %-----------------------
 % Title page information
 %-----------------------
 \title{GenericFS Documentation}
-\author{\copyright\ Copyright 2013 by Peter C. Chapin}
-\date{October 31, 2013}
+\author{\copyright\ Copyright 2024 by Peter Chapin}
+\date{July 13, 2024}
 \maketitle
 
 \tableofcontents
@@ -102,7 +112,9 @@ You should also know something about how to use Linux, and be comfortable workin
 command line shell. If you want to experiment with \GenericFS\ you will need a machine on which
 you can be root so that you can partition disks, load kernel modules, and do other
 administrative tasks. You should avoid using a machine that you depend on. \GenericFS\ is
-experimental. It may crash your kernel.
+experimental. It may crash your kernel. The accompanying documents \textit{Compiling Linux} and
+\textit{DevBox and HackBox} contain information that will help you set up a virtual environment
+with a suitable Linux kernel for experimentation.
 
 \input{doc-Preliminaries}
 \input{doc-GenericFS-Structure}

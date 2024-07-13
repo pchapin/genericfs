@@ -12,3 +12,7 @@ mkinitramfs
 Minicom
 Bochs
 Watcom
+unpartitioned
+inode
+endian
+inodes

@@ -1,27 +1,10 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FILE   : doc-GenericFS-Structure.tex
-% SUBJECT: The on-disk layout of GenericFS
-% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
-%
-% TODO:
-%
-% + See comments in the text.
-%
-% Send comments or bug reports to:
-%
-%    Peter C. Chapin
-%    Computer Information Systems
-%    Vermont Technical College
-%    Williston, VT 05495
-%    PChapin@vtc.vsc.edu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{\GenericFS\ Structure}
 \label{sec:structure}
 
 In this section I will describe the layout of \GenericFS\ on the disk. Keep in mind that the
 layout of file system data structures in memory is not necessarily the same as the on-disk
-layout. In memory you will need to abide by the requirements of the Virtual File System (VFS)
+layout. In memory, you will need to abide by the requirements of the Virtual File System (VFS)
 and store information into VFS structures as appropriate. In cases where the VFS is not specific
 about the in-memory layout (for example for the free maps) you should consider designs that
 offer good efficiency even if the on-disk data needs to be significantly reformatted when it is
@@ -32,14 +15,14 @@ that there is no padding space between the elements. The driver uses appropriate
 packing declarations to ensure that the compiler generates the right layout no matter what
 processor is being targeted.
 
-In addition \GenericFS\ stores all multibyte quantities on the disk in little endian form. The
-driver uses byte swapping helper functions in the kernel to insure that the endianness of the
+In addition, \GenericFS\ stores all multibyte quantities on the disk in little endian form. The
+driver uses byte swapping helper functions in the kernel to ensure that the endianness of the
 data is correct when loading or storing disk data into kernel data structures.
 
 \subsection{General Layout}
 \label{sec:structure-general}
 
-\GenericFS\ block size is always 4 KBytes. Furthermore there is one inode for every block. As a
+\GenericFS\ block size is always 4 KiB. Furthermore, there is one inode for every block. As a
 consequence of this design a \GenericFS\ partition will never normally run out of inodes (do you
 see that?). These constraints may be lifted in the future and thus there are places where the
 size of a block and the number of inodes on a partition are treated as adjustable parameters
@@ -48,7 +31,7 @@ file system metadata is entirely depending on the size of the partition.
 
 The zeroth block on the partition is the super block. It declares the partition as \GenericFS\
 and provides information on the size and layout of the metadata. It serves no other purpose and
-most of the superblock is unusued. The layout of the super block follows the structure in Figure
+most of the super block is unused. The layout of the super block follows the structure in Figure
 \ref{fig:super-layout}.
 
 \begin{figure}[htbp]
@@ -65,7 +48,7 @@ struct gfs_superblock {
 };
 \end{lstlisting}
   \end{bigbox}
-  \caption{Superblock layout}
+  \caption{Super Block layout}
   \label{fig:super-layout}
 \end{figure}
 
@@ -83,8 +66,8 @@ Following the inode free map is the block free map. It has exactly the same size
 the inode free map. The fact that both of these free maps have the same size is a manifestation
 of the ``one inode per block'' constraint.
 
-Following the block free map is the inode table itself. It contains space for all of the inodes.
-Each inode is 64 bytes. Since 64 divides 4 KBytes, no inode will overlap a block
+Following the block free map is the inode table itself. It contains space for all the inodes.
+Each inode is 64 bytes. Since 64 divides 4 KiB, no inode will overlap a block
 boundary\footnote{Thankfully. Managing such ``split inodes'' would be very awkward}. The inode
 table is an integer number of blocks in size. Part of the last block is unlikely to be fully
 used.
@@ -92,10 +75,10 @@ used.
 \subsection{Inodes}
 \label{sec:structure-inode}
 
-Inodes have the format shown in Figure \ref{fig:inode-layout}. The fields are mostly self
-explanatory. Notice that block numbers are unsigned 32 bits. Notice also that the numbers for
-the first four blocks of the file are stored in the inode itself. Only two indirection pointers
-are used.
+Inodes have the format shown in Figure \ref{fig:inode-layout}. The fields are mostly
+self-explanatory. Notice that block numbers are unsigned 32 bits. Notice also that the numbers
+for the first four blocks of the file are stored in the inode itself. Only two indirection
+pointers are used.
 
 \begin{figure}[htbp]
   \centering
@@ -121,29 +104,30 @@ struct gfs_inode {
   \label{fig:inode-layout}
 \end{figure}
 
-This structure allows for a maximum file size of $(4 + 4096/4 + (4096/4)^2) \times 4096$ bytes.
-This works out to 4,299,177,984 bytes. This is actually slightly greater than $2^{32} - 1$
-(which is 4,294,967,295 bytes). Since the file size is represented with a 32 bit quantity, it is
+This structure allows for a maximum file size of $(4 + 4096/4 + (4096/4)^2) \times 4096$ bytes,
+which works out to 4,299,177,984 bytes. This is actually slightly greater than $2^{32} - 1$
+(which is 4,294,967,295 bytes). Since the file size is represented with a 32-bit quantity, it is
 the $2^{32} - 1$ that actually limits the maximum file size. This is one reason why the system
 does not use a 3rd indirection pointer (another reason is that it adds unnecessary complications
-to what is intended to be a simple file system). In theory the largest disk this system could
-handle would be 4K*4G bytes ($2^{32}$ blocks, each 4~Kbytes in size). This is 16 TiB. In
-practice current\footnote{2002-09} Linux block device drivers use signed 32 bit integers to
-number disk sectors. Since disk sectors are usually 512 bytes, this implies a maximum partition
-size of $2^{31} \times 512 = 1$ Tbyte.
+to what is intended to be a simple file system).
+
+The largest partition this system could handle would be 4G*4K bytes ($2^{32}$ blocks, each 4~KiB
+in size), which is 16~TiB. This follows from the use of 32-bit block numbers. So, while it is
+not possible to create a single file that could fill the largest possible partition, it is still
+possible to use the full capacity of such a partition by creating many files.
 
 \subsubsection*{Exercises}
 
 \begin{enumerate}
 
-\item Suppose a future version of \GenericFS\ supported block sizes of 2 Kbytes, 4 Kbytes, or 8
-  Kbytes. What would be the size of the largest file in each of those cases?
+\item Suppose a future version of \GenericFS\ supported block sizes of 2 KiB, 4 KiB, or 8 KiB.
+  What would be the size of the largest file in each of those cases?
 
-\item Could the \GenericFS\ inode format be extended to hold 64~bit file sizes? Would there be
+\item Could the \GenericFS\ inode format be extended to hold 64-bit file sizes? Would there be
   any point in doing this? Discuss.
 
 \item It is desirable to write the driver and any \GenericFS\ tools to use only the information
-  in the superblock to locate file system metadata. Why not instead take advantage of known
+  in the super block to locate file system metadata. Why not instead take advantage of known
   properties of \GenericFS\ (such as the fact that the number of inodes equals the number of
   blocks) to simplify the programming?
 
@@ -153,7 +137,7 @@ size of $2^{31} \times 512 = 1$ Tbyte.
 \label{sec:structure-directories}
 
 Immediately following the inode table is the first block of the root directory. The root
-directory is described by inode \#0 and it is set up when the file system is initialized. It is
+directory is described by inode \#0, and it is set up when the file system is initialized. It is
 important to keep in mind that directories are treated as special kinds of files. The disk space
 they occupy is described by an inode the same as for any other file.
 
@@ -176,7 +160,7 @@ directory file. There is no particular restriction on the spacing of directory e
 directory file---there could be gaps between entries. However, to keep the directory format
 manageable the list never flows backwards in the directory file. The offset of an entry is
 always beyond the offset of its previous entry. Also, no directory entry ever crosses a block
-boundary in the directory file. Thus it is never necessary to read two blocks to see a single
+boundary in the directory file. Thus, it is never necessary to read two blocks to see a single
 directory entry.
 
 Immediately after the next offset pointer, each directory entry consists of an unsigned 32 bit
@@ -194,14 +178,14 @@ undefined behavior.
 
 \item The specification above requires that the list of directory entries in a directory only
   flow forward. Does that really provide any advantage? If so what? What would be involved in
-  implmenting a more general approach where the list is allowed to flow in either direction?
+  implementing a more general approach where the list is allowed to flow in either direction?
 
 \item As files are created and removed holes will develop in the directory file. Will the holes
   ever be used again? Is there any value in periodically compacting directories to remove those
   holes?
 
 \item Looking up an entry in a linked list is an $O(n)$ operation. For large directories with
-  many files that could be time consuming. Two alternative schemes are using B-trees or hash
+  many files that could be time-consuming. Two alternative schemes are using B-trees or hash
   tables. Consider how these alternatives might be implemented. Which would be easier? What
   advantages would they provide? Can the \GenericFS\ software be modularized so that directory
   handling could be easily replaced later (say for experimentation purposes)?

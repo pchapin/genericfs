@@ -1,20 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% FILE   : doc-Implementation.tex
-% SUBJECT: Implementation details for GenericFS
-% AUTHOR : (C) Copyright 2013 by Peter C. Chapin
-%
-% TODO:
-%
-% + See comments in the text.
-%
-% Send comments or bug reports to:
-%
-%    Peter C. Chapin
-%    Computer Information Systems
-%    Vermont Technical College
-%    Williston, VT 05495
-%    PChapin@vtc.vsc.edu
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Implementation}
 \label{sec:implementation}
@@ -23,15 +6,15 @@ For information on implementing file systems under Linux see the file \filename{
 \filename{Documentation/filesystems} directory of the kernel source tree. That document
 describes the VFS and some of the things that need to be done to support it\footnote{Keep in
   mind that the documentation in \filename{Documentation}, like all Linux kernel documentation
-  you might find, is not necessarily up to date. Always cross check what the documentation tells
+  you might find, is not necessarily up to date. Always cross-check what the documentation tells
   you against the source code.}. You can also look at some of the file systems that have already
 been implemented. For example the directory \filename{fs/ext2} contains the implementation of
 the ext2 file system.
 
 It is generally much easier to implement a file system for read-only access than it is to handle
 the fully general case. This is because file systems that can only be read don't need to support
-the methods that modify file system structures and they don't need to worry about consistency,
-locking, dirty cache buffers, and so forth. Thus the initial implementation of \GenericFS\
+the methods that modify file system structures, and they don't need to worry about consistency,
+locking, dirty cache buffers, and so forth. Thus, the initial implementation of \GenericFS\
 provides just read-only operation.
 
 There are several steps involved in implementing a new file system for Linux. However, not all
@@ -45,7 +28,7 @@ There are several operations structures that need to be initialized with pointer
 functions. I will call these functions ``methods.'' The \code{super_block} structure contains
 methods for looking up and disposing of inodes. The \code{inode_operations} structure contains
 methods for dealing with individual inodes. The \code{file_operations} structure contains
-methods for dealing with open files. These methods, and the supporting functions they require,
+methods for dealing with open files. These methods and the supporting functions they require,
 constitute the bulk of the driver code.
 
 \subsection{The Disk Tool}
@@ -60,7 +43,7 @@ you can unmount the \GenericFS\ partition and use the disk tool to inspect the \
 structures that the module created or modified.
 
 The disk tool takes the name of a disk partition on the command line and presents a menu of
-options using a curses based interface. The options are mostly self explanatory. Note that the
+options using a curses based interface. The options are mostly self-explanatory. Note that the
 disk tool combines the functionality of a file system creation tool, a file system checking
 tool, and a file system dumping tool, all in an interactive package. While this is nice for
 experimenting with \GenericFS\ stand-alone versions of these tools should also be written at
@@ -96,14 +79,14 @@ else {
 
 Here \code{block_count} is a long integer representing the number of blocks on the partition.
 \code{BLKGETSIZE} is a special number defined in \code{<sys/ioctl.h>}. The \code{ioctl} call
-returns the size of the partition in 512 byte sectors. \code{BLOCKSIZE} is 4 Kbytes in our case.
+returns the size of the partition in 512 byte sectors. \code{BLOCKSIZE} is 4 KiB in our case.
 
-Note that if the partition is not a multiple of 4 Kbytes the last few bytes of the partition
-will be unused. The partition size is always a multiple of 512 bytes since it contains an
-integer number of sectors.
+Note that if the partition is not a multiple of 4 KiB the last few bytes of the partition will
+be unused. The partition size is always a multiple of 512 bytes since it contains an integer
+number of sectors.
 
 You can also use a program such as \filename{od} directly on the partition's device file to view
-the data in the partition. However \filename{od} does not understand \GenericFS, of course, and
+the data in the partition. However, \filename{od} does not understand \GenericFS, of course, and
 thus won't display the data in an easily understood manner. However, it can be useful for
 debugging the disk tool itself. See the \filename{od} manual page for more information.
 
@@ -165,7 +148,7 @@ When reading data from the disk into variables in memory the helper functions \c
 and \code{le32_to_cpu}. These functions convert little endian data to the native CPU format. For
 little endian CPUs they are macros that do nothing. However, if the module is ever compiled on a
 big endian CPU these functions will do an important translation. \GenericFS\ mandates little
-endian data on disk but we still want big endian processors to be able to handle it.
+endian data on disk, but we still want big endian processors to be able to handle it.
 
 One issue that comes up when reading inodes is that there is more information in the disk inode
 than can be put into the members of the VFS inode. This is because the VFS is not interested in
@@ -173,18 +156,17 @@ how the data is laid out on the disk. Each file system manages that in its own w
 can't provide the necessary members to hold layout specific information since the methods used
 by different file systems are likely to be radically different.
 
-To deal with this, the inode structures in memory are actually larger then the VFS inode. In
+To deal with this, the inode structures in memory are actually larger than the VFS inode. In
 particular each \GenericFS\ inode is represented using a \code{gfs_inode_info} structure. This
 structure contains \GenericFS\ specific members and a VFS inode member as well. Yet the VFS
 deals only with the VFS inode enclosed in each \code{gfs_inode_info}.
 
-Since there will likely be a large number of inodes in the inode cache it is important to
-allocate the \code{gfs_inode_info} structures efficiently. Thus the driver creates a kernel SLAB
-cache for this purpose. A SLAB cache is a cache optimized for allocation of a large number of
-objects that are all the same size. There would be a different SLAB cache for different sized
-objects; at any point in time the kernel has several SLAB caches active (see
-\filename{/proc/slabinfo}). Figure \ref{fig:init-slab} shows how a SLAB cache is created for the
-inode structures.
+Since there will likely be many inodes in the inode cache it is important to allocate the
+\code{gfs_inode_info} structures efficiently. Thus, the driver creates a kernel SLAB cache for
+this purpose. A SLAB cache is a cache optimized for allocation of many objects that are all the
+same size. There would be a different SLAB cache for different sized objects; at any point in
+time the kernel has several SLAB caches active (see \filename{/proc/slabinfo}). Figure
+\ref{fig:init-slab} shows how a SLAB cache is created for the inode structures.
 
 \begin{figure*}[tp]
   \centering
@@ -225,8 +207,8 @@ that the SLAB cache should not be stored in a mounted partition's super block si
 SLAB cache can be used for all mounted \GenericFS\ partitions.
 
 A pointer to an inode initialization function \code{init_once} is also passed to
-\code{kmem_cache_create}. The SLAB cache calls this function for each object it allocates. In
-the current implementation of \GenericFS\ this function simply calls a kernel helper function
+\code{kmem_cache_create}. The SLAB cache calls this function for each object it allocates.
+In the current implementation of \GenericFS\ this function simply calls a kernel helper function
 \code{inode_init_once} to take care of the VFS inode member. In the future it might also be
 necessary to initialize the \GenericFS\ specific parts of the inode structure.
 
@@ -252,7 +234,7 @@ This activity can be witnessed if you write a short demonstration program that s
 and then use the \command{strace} command on that program.
 
 At this stage we don't need to provide an actual \code{lookup} method, but to satisfy
-\code{open} you will need to at least provide a place holder method so that you can install a
+\code{open} you will need to at least provide a placeholder method so that you can install a
 non-NULL pointer in the directory inode operations structure.
 
 To satisfy the \code{getdents} system call we need to implement the \code{readdir} method in the

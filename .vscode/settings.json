@@ -3,7 +3,11 @@
         "Bochs",
         "bootloader",
         "debugee",
+        "inodes",
+        "multibyte",
+        "POSIX",
         "preconfigured",
+        "unpartitioned",
         "Williston"
     ]
 }
