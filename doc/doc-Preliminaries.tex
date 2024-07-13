@@ -61,15 +61,20 @@ inspection or experimentation. This is easier than moving physical (or even virt
 around.
 
 To create an image file, first create a file of some suitable size using the \command{dd}
-command. For example, to create a 256 MiB file use a command such as:
+command. For example, to create a 192 MiB file use a command such as:
 \begin{verbatim}
-$ dd if=/dev/zero of=disk.img count=524288
+$ dd if=/dev/zero of=disk.img count=393216
 \end{verbatim}
 
 Here the input file is the special file \filename{/dev/zero} which returns an endless stream of
 zero bytes. The output file is \filename{disk.img} in this example, but it could have any name.
-The count is given in units of 512 bytes, so 524288 corresponds to an output file of exactly 256
-MiB.
+The count is given in units of 512 bytes, so a count of 393216 corresponds to an output file of
+exactly 192 MiB.
+
+The significance of this size is that it is large enough to cause the free maps to span multiple
+blocks (specifically, 1.5 blocks each) without creating a disk image that is unduly large. This
+is important for testing purposes. The details of \GenericFS's on-disk layout are discussed in
+Section~\ref{sec:structure}.
 
 \subsubsection{Formatting}
 
