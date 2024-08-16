@@ -57,7 +57,7 @@
 % ----------------------
 \title{DevBox and HackBox}
 \author{\copyright\ Copyright 2024 by Peter Chapin}
-\date{Last Revised: June 6, 2024}
+\date{Last Revised: August 14, 2024}
 \maketitle
 
 \tableofcontents
@@ -88,25 +88,24 @@ rebuild) the virtual machines.
 
 \section{Installing VirtualBox}
 
-The CIS lab machines on the Williston and Randolph campuses should already have the VirtualBox
-software installed. If you are using a lab machine you can skip this section and continue with
-Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on your personal
-machine you will need to first install VirtualBox on your system.
+The CIS lab machines on the Williston (BLP-210) and Randolph (CON-106) campuses should already
+have the VirtualBox software installed. If you are using a lab machine you can skip this section
+and continue with Section~\ref{sec:booting-guests}. If you intend to run DevBox and HackBox on
+your personal machine you will need to first install VirtualBox on your system.
 
-\textit{Important note for macOS users!} The DevBox and HackBox virtual machines provided are
-x86\_64 guests. At the time of this writing, it is not easy to run these guests on Mac computers
-based on the Apple ARM processors (Apple Silicon: M1, M2, etc.). However, you can try installing
-the UTM virtualization app from the App Store and then running DevBox and HackBox in emulation
-mode rather than in virtualization mode\footnote{\todo{Add more details about how to import the
-virtual machines into UTM.}}. The performance of the guest systems will be significantly less,
-but they may still work adequately. Alternatively, you could either find an x86\_64 system on
-which to run the virtual machines (Windows, Linux, or an x86\_64 based Mac), or you can use one
-of the lab machines.
+\textit{Important note for macOS and Windows-for-ARM users!} The DevBox and HackBox virtual
+machines provided are x86\_64 guests. At the time of this writing, it is not easy to run these
+guests on Mac computers based on the Apple ARM processors (Apple Silicon: M1, M2, etc.) or on
+the new Windows systems based on the Qualcomm Snapdragon processors. However, on macOS at least,
+you can try installing the UTM virtualization app from the App Store and then running DevBox and
+HackBox in emulation mode rather than in virtualization mode\footnote{\todo{Add more details
+about how to import the virtual machines into UTM.}}. The performance of the guest systems will
+be significantly less, but they may still work adequately. Alternatively, you could either find
+an x86\_64 system on which to run the virtual machines, or you can use one of the lab machines.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
-personal machine you should be sure you have at least 8 GiB of memory\footnote{Running on a 4
-GiB machine is possible, but you must first adjust the amount of memory allocated to the virtual
-machines.} and 100 GiB of free disk space. You also need to have hardware virtualization support
+personal machine you should be sure you have at least 4 GiB of memory\footnote{8 GiB or more is
+preferred.} and 40 GiB of free disk space. You also need to have hardware virtualization support
 turned on in the BIOS of your host computer. Most machines come with this feature turned on by
 default, so if you are unsure, you can probably ignore this issue until you have an actual
 problem. Older machines may require you to enter the BIOS and activate this feature. If your
@@ -127,14 +126,14 @@ conditions. When you launch a guest VM, look in the lower right corner of the wi
 a blue-gray box with a ``V'' then you are running normally. If you see a green turtle, you
 probably have Hyper-V enabled. You could disable Hyper-V to get better performance, but be aware
 that this will disable any other virtualization system you may have installed that relies on it
-(i.e., docker). My recommendation is that you don't worry about this too much unless you observe
+(i.e., docker or WSL). My recommendation is that you don't worry about this unless you observe
 actual performance issues.
 
 Begin by downloading VirtualBox from \url{http://www.virtualbox.org}. Be sure to download both
 the main installer for your system \emph{and} the Extension Pack. The Extension Pack adds
 important functionality that DevBox and HackBox requires. \emph{The virtual machines will likely
 not boot in their default configuration without the Extension Pack installed!} The current
-versions of DevBox and HackBox have been tested using VirtualBox version 7.0.18. They will
+versions of DevBox and HackBox have been tested using VirtualBox version 7.0.20. They will
 probably work with other versions of VirtualBox that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
@@ -143,21 +142,18 @@ to install that as well.
 \section{Booting the Guests}
 \label{sec:booting-guests}
 
-DevBox and HackBox are distributed as virtual appliances. This is a standard file format that
-includes not only the virtual hard disk (compressed) but also the virtual machine's
-configuration. Once you import the virtual appliance into VirtualBox you can boot a virtual
-machine by just starting it as you might start a real computer.
+DevBox and HackBox are distributed as virtual appliances (OVA for ``Open Virtual Appliance'').
+This is a standard file format that includes not only the virtual hard disk (compressed) but
+also the virtual machine's configuration. Once you import the virtual appliance into VirtualBox
+you can boot a virtual machine by just starting it as you might start a real computer.
 
-The virtual appliance file format is accepted by several virtualization products. However,
-DevBox, in particular, assumes it is running under VirtualBox because it has the VirtualBox
-``guest additions'' pre-installed.\footnote{HackBox does not have the guest additions installed
-to simplify its kernel configuration.} The guest additions are a collection of software
-components that are loaded into the guest and that streamline the operation of the
-system.\footnote{The term ``guest'' refers to the system running inside the virtual machine. The
-term ``host'' refers to the system running the virtualization software.}
+First, some terminology. The ``guest'' system is the system running inside the virtual machine.
+The ``host'' system is the system running the virtualization software. These terms are widely
+used in the virtualization community, and I will use them here.
 
-You may be able to run DevBox and HackBox using some other virtualization product such as
-VMware. However, you may have to do some additional configuration before it will work well.
+The virtual appliance format is accepted by several virtualization products. You may be able to
+run DevBox and HackBox using some other virtualization product such as VMware. However, that is
+an untested configuration.
 
 To import the virtual appliances into VirtualBox follow the steps below.
 
@@ -178,12 +174,12 @@ To import the virtual appliances into VirtualBox follow the steps below.
 In principle no further configuration is necessary since the configurations of the virtual
 machines are contained in their original OVA files. However, you might review the machine
 settings and tweak them if desired. Note especially the amount of memory allocated to the
-virtual machines. \emph{DevBox is configured to use 2.0 GiB of memory and HackBox is configured
-to use 0.5 GiB of memory. If your host computer has less than 8 GiB of memory you may want to
+virtual machines. \emph{DevBox is configured to use 1.5 GiB of memory and HackBox is configured
+to use 0.5 GiB of memory. If your host computer has less than 4 GiB of memory you may want to
 adjust the configured values downward.} If your host computer is well-endowed with memory you
 might consider increasing the amount available to the virtual machines, particularly DevBox. A
 good rule of thumb is to allocate no more than 50\% of your system's physical memory to
-\emph{all} virtual machines taken together (that you intend to run at the same time).
+\emph{all} virtual machines that you intend to run at the same time.
 
 After you have imported the appliances you can delete the OVA files to save disk space. However,
 if you have sufficient disk space you might consider keeping the files in case you need to
@@ -192,14 +188,19 @@ long download.
 
 It is perfectly reasonable to boot both DevBox and HackBox at the same time; in fact this is
 often necessary for the kind of work you'll be doing. Each virtual machine runs in its own
-window. Both DevBox and HackBox have console-only interfaces. HackBox lacks a graphical
-interface to simplify its configuration. DevBox, where you will do most of your work, could
-benefit from a graphical interface in principle. However, in an effort to reduce the resources
-required to run these VMs, and to minimize problems with graphics driver incompatibilities,
-DevBox also lacks a graphical interface. Tasks that require a GUI, such as browsing the web, can
-be done on the host system.
+window. Be aware that you should boot DevBox before booting HackBox. The two virtual machines
+share a named pipe that DevBox creates. If you boot HackBox first, you will see an error about
+not being able to connect to the (non-existent) pipe. This is mostly just an annoyance. It only
+matters if you are trying to do kernel debugging on HackBox.
 
-The Linux distribution running inside both virtual machines is Ubuntu 24.04, 64~bit. Both VMs
+Both DevBox and HackBox have console-only interfaces. HackBox lacks a graphical interface to
+simplify its configuration. DevBox, where you will do most of your work, could benefit from a
+graphical interface in principle. However, in an effort to reduce the resources required to run
+these VMs, and to minimize problems with graphics driver incompatibilities, DevBox also lacks a
+graphical interface. Tasks that require a GUI, such as browsing the web, can be done on the host
+system.
+
+The Linux distribution running inside both virtual machines is Ubuntu 24.04, 64-bit. Both VMs
 are running the server version of Ubuntu since that version is more resource-friendly.
 
 \section{Logging Into the Guests}
@@ -252,10 +253,7 @@ Windows systems use a name such as
 
 Note that the serial port configuration on DevBox is in ``server mode'' which means DevBox is
 responsible for creating the named pipe so HackBox can use it. The consequence of this is that
-you will need to boot DevBox before you boot HackBox in cases where you want to use both. In
-fact, booting HackBox alone may produce an error message from VirtualBox about not being able to
-connect to the named pipe. This isn't necessarily a problem depending on what you intend to do
-with HackBox.
+you will need to boot DevBox before you boot HackBox in cases where you want to use both.
 
 Both DevBox and HackBox has a user account named ``student'' with a password of ``frenchfry.''
 You should log in as this user. The student user can use \texttt{sudo} when necessary to perform
@@ -314,13 +312,13 @@ $ ping hackbox
 
   Both systems also have a second network interface defined that connects via a network address
   translator (NAT) to the host's physical network interface. This gives both machines access to
-  the Internet for updates and other purposes.
+  the Internet.
 
 \item On DevBox issue the command:
 \begin{Verbatim}
 $ ssh hackbox
 \end{Verbatim}
-  This should connect to the ssh server on HackBox over the internal network and allow you to
+  This should connect to the ssh server on HackBox over the host-only network and allow you to
   log in (again) as student. You can use the \texttt{scp} command to transfer files between the
   two systems.
 
@@ -350,14 +348,14 @@ $ cat /proc/version
   information about the kernel version you are using. It should say 6.9.3. This is the
   experimental kernel we will be working with.
 
-\item On DevBox use the file manager to browse
+\item On DevBox browse around in the directory hierarchy
 \begin{Verbatim}
 /home/student/linux-6.9.3
 \end{Verbatim}
   This is the source code for the experimental kernel. You will become familiar with its
   organization in the future, but a quick look now is a good first step toward that goal.
 
-\item On DevBox in a terminal window change to
+\item On DevBox change to
 \begin{Verbatim}
 /home/student/linux-6.9.3
 \end{Verbatim}
@@ -408,11 +406,11 @@ $ cp version.c version.c.orig
 \item Issue the command \command{make} at the root of the kernel source tree to build a new
   kernel reflecting your changes. This should not take too long because the kernel has already
   been built and \command{make} should realize that most of the object files are up-to-date
-  (however, it can take several minutes to do this). If \command{make} appears to be recompiling
-  everything something is wrong (possibly you accidentally saved changes when looking at the
-  configuration earlier). In that case just cancel the build and don't worry about this step to
-  save time. You will need to suffer the full build eventually, however, but it might take hours
-  depending on your hardware.
+  (however, it can still take several minutes to do this). If \command{make} appears to be
+  recompiling everything something is wrong (possibly you accidentally saved changes when
+  looking at the configuration earlier). In that case just cancel the build and don't worry
+  about this step to save time. You will need to suffer the full build eventually, however, but
+  it might take hours depending on your hardware.
 
 \item Using \command{scp}, transfer the new image to HackBox:
 \begin{Verbatim}
@@ -481,9 +479,7 @@ $ git pull
 $ source useOW.sh
 \end{Verbatim}
   to configure the environment of your terminal to make the Open Watcom C/C++ compilers
-  available. Phoenix is built with Open Watcom. You might want to change the title on the
-  terminal to reflect this, so you don't forget (use the ``Terminal $\rightarrow$ Set Title''
-  menu item on the terminal program).
+  available. Phoenix is built with Open Watcom.
 
 \item Use the \filename{makeandrun.sh} script in the top level Phoenix folder. That script
   creates a Phoenix boot disk image containing the system and several sample programs, and then
@@ -498,6 +494,8 @@ $ source useOW.sh
 \end{enumerate}
 
 \section{Using KGDB and KDB}
+
+\textit{This section needs to be reviewed and updated!}
 
 KGDB is a kernel debugger that allows you to connect \command{gdb} running on DevBox to the
 kernel running on HackBox. Using this tool is a bit intricate. Here I outline the basic
@@ -588,18 +586,17 @@ will entail the loss of some or all of your work. Thus, I strongly recommend tha
 your work often. This can be done by using a special backup script. To use it simply execute
 \command{backup} at a command prompt.
 
-It is extremely important to understand that The \command{backup} script only backs up the
-files in the \filename{cis-4020} folder. This means the backup archives are relatively small,
-but it also means that any files you put elsewhere on the system will not be backed up. \emph{I
+It is extremely important to understand that The \command{backup} script only backs up the files
+in the \filename{cis-4020} folder. This means the backup archives are relatively small, but it
+also means that any files you put elsewhere on the system will not be backed up. \emph{I
 therefor strongly recommend that you store all course materials in the cis-4020 folder.} Be
-aware that configuration changes you make, for example to the desktop on DevBox, are not backed
-up.
+aware that any system configuration changes you make are not backed up.
 
 Once the \command{backup} script has created the archive it will ask you if you want to transfer
 that archive to Lemuria. Assuming you have an account on that system you can use Lemuria as a
 repository of backups. If you do not transfer the backup file, the script will leave it in
-student's home directory where you can transfer it some other way (for example as an email
-attachment using webmail).
+student's home directory where you can transfer it some other way (for example, using WinSCP on
+your host).
 
 You should definitely transfer the backup archives off the virtual machine. The point of the
 backups are to save your work in case the VM is destroyed. Keeping the backup archives on the VM
@@ -619,7 +616,7 @@ Done
 Transfer to lemuria? [y/n] \textit{y}
 Username: \textit{pchapin}
 Password: 
-backup-cis-4020-2024-06-19.tar.gz                             100%   38KB  38.3KB/s   00:00    
+backup-cis-4020-2024-06-19.tar.gz   100%   38KB  38.3KB/s   00:00    
 Transfer successful. Removing ~/backup-cis-4020-2024-06-19.tar.gz
 student@devbox:~$
 \end{Verbatim}
@@ -644,7 +641,7 @@ are on a low speed network connection since it will reduce the amount of network
 required. See the \command{rsync} manual page for more information.
 
 Note that the \command{rsync} command above uses ssh as the underlying transport. Thus, you will
-be prompted for your password, yet your password will not appear on the network unencrypted.
+be prompted for your password, however your password will not appear on the network unencrypted.
 Note also that the \command{rsync} command above will create (or update) a \filename{cis-4020}
 directory beneath your home directory on the remote host.
 
