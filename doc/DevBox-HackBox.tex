@@ -57,7 +57,7 @@
 % ----------------------
 \title{DevBox and HackBox}
 \author{\copyright\ Copyright 2024 by Peter Chapin}
-\date{Last Revised: August 14, 2024}
+\date{Last Revised: August 27, 2024}
 \maketitle
 
 \tableofcontents
@@ -97,11 +97,11 @@ your personal machine you will need to first install VirtualBox on your system.
 machines provided are x86\_64 guests. At the time of this writing, it is not easy to run these
 guests on Mac computers based on the Apple ARM processors (Apple Silicon: M1, M2, etc.) or on
 the new Windows systems based on the Qualcomm Snapdragon processors. However, on macOS at least,
-you can try installing the UTM virtualization app from the App Store and then running DevBox and
-HackBox in emulation mode rather than in virtualization mode\footnote{\todo{Add more details
-about how to import the virtual machines into UTM.}}. The performance of the guest systems will
-be significantly less, but they may still work adequately. Alternatively, you could either find
-an x86\_64 system on which to run the virtual machines, or you can use one of the lab machines.
+you can install the UTM virtualization app from the App Store and then run DevBox and HackBox in
+emulation mode rather than in virtualization mode. The procedure for doing this is described in
+more detail in Section~\ref{sec:utm-macos}. The performance of the guest systems will be
+significantly less, but they may still work adequately. Alternatively, you could either find an
+x86\_64 system on which to run the virtual machines, or you can use one of the lab machines.
 
 DevBox and HackBox together consume significant resources. Before trying to install them on your
 personal machine you should be sure you have at least 4 GiB of memory\footnote{8 GiB or more is
@@ -138,6 +138,81 @@ probably work with other versions of VirtualBox that are close to that version.
 
 Run the VirtualBox installer. After the installer completes double click on the Extension Pack
 to install that as well.
+
+\subsection{Using UTM on macOS}
+\label{sec:utm-macos}
+
+UTM is an inexpensive virtualization app available from the macOS App Store. Although it
+may not be as full-featured as VirtualBox, it is sufficient for running DevBox and HackBox.
+
+UTM does not support OVA file import directly. However, it is still possible to manually import
+the VMDK files that are inside the OVA files. Start by doing the following:
+
+\begin{enumerate}
+\item Download the OVA files for DevBox and HackBox as described in
+Section~\ref{sec:booting-guests}.
+\item Unpack the OVA files using the command \command{tar -xvf filename.ova} in a terminal
+window. This will extract the VMDK file that contains the virtual hard disk image and a couple
+of configuration files, which can be ignored (and deleted).
+\item Start UTM and create a new virtual machine. Select ``emulate'' as the virtualization
+method.
+\item When asked about what operating system you will be using, select ``Other'' under
+``Custom.''
+\emph{Do not select Linux!}
+\item On the next screen, select a boot image of ``None.'' Accept all other defaults, although you
+might consider changing the name of the virtual machine on the final summary screen. 
+\end{enumerate}
+
+The procedure above creates a new virtual hard disk, which you must delete. After that, you can
+import the VMDK file you unpacked earlier. Proceed as follows:
+
+\begin{enumerate}
+\item Open the settings of the new virtual machine, and click on ``IDE Drive'' on the left side.
+\item Delete the existing disk image.
+\item Click on ``New'' and then ``Import'' to import the VMDK you unpacked earlier. Save the
+changes. The save operation takes a few moments, because UTM converts the file from VMDK format
+to its native QCOW2 format.
+\item Finally, on the left side of the virtual machine settings dialog, click on ``QEMU'' and
+uncheck the box for UEFI boot. Save that change. The virtual machine will not boot unless you do
+this.
+\end{enumerate}
+
+Once you have finished the import, you no longer need the VMDK files, the OVA files, or the
+configuration files. They can be deleted to save disk space.
+
+UTM manages the virtual networks differently than VirtualBox. Consequently, you will need to
+make some adjustments to the network configuration of the virtual machines. The first step is to
+change the network interface used with DHCP in the network configuration file. This file is
+located at \filename{/etc/netplan/50-cloud-init.yaml}. The file should look something like this:
+
+\begin{Verbatim}
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: true
+    enp0s8:
+      addresses: [192.168.56.2/24]
+\end{Verbatim}
+
+In the VirtualBox environment the enp0s3 interface is the interface that connects to the virtual
+NAT and from there to the host's physical network interface. The enp0s8 interface is the
+host-only interface that connects to the host-only network. In the UTM environment the NAT
+interface must be changed to enp0s1.
+
+\todo{We still need to describe how to get communication between the host and the two VMs working.}
+
+After making this change you can either reboot the VM or run the command \command{sudo netplan
+apply} to apply the new network configuration.
+
+Take note of the IP address assigned to the enp0s1 interface in each virtual machine. Then
+adjust the host addresses in the \filename{/etc/hosts} file on each virtual machine to match the
+new addresses. This will allow the VMs to refer to each other by name rather than having to
+always use IP addresses.
+
+You might also want to adjust the amount of memory UTM allocates to the virtual machines. By
+default, UTM allocates 4 GiB of memory to each machine. It is reasonable to reduce this to 1.5
+GiB for DevBox and 0.5 GiB for HackBox.
 
 \section{Booting the Guests}
 \label{sec:booting-guests}
