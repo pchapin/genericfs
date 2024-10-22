@@ -16,3 +16,4 @@ unpartitioned
 inode
 endian
 inodes
+GenericFS
