@@ -37,7 +37,7 @@ struct inode *gfs_iget( struct super_block *sb, unsigned long ino )
     struct gfs_ssupplementary *super_sup; // Points at a supplementary super block struct.
     struct inode *inode;
 
-    ENTERED
+    ENTERED;
 
     super_sup = (struct gfs_ssupplementary *)sb->s_fs_info;
 
@@ -74,14 +74,16 @@ struct inode *gfs_iget( struct super_block *sb, unsigned long ino )
     inode->i_gid.val = le16_to_cpu( gin->group_id );
     set_nlink( inode, le16_to_cpu( gin->nlinks ) );
     inode->i_size  = le32_to_cpu( gin->file_size );
-    inode->i_atime.tv_sec  = le32_to_cpu( gin->atime );
-    inode->i_mtime.tv_sec  = le32_to_cpu( gin->mtime );
-    inode->i_ctime.tv_sec  = le32_to_cpu( gin->ctime );
-    inode->i_atime.tv_nsec = inode->i_mtime.tv_nsec = inode->i_ctime.tv_nsec = 0;
-    inode->i_blocks  = inode->i_size >> BLOCKSIZEBITS;
+    inode_set_atime( inode, le32_to_cpu( gin->atime ), 0 );
+    inode_set_mtime( inode, le32_to_cpu( gin->mtime ), 0 );
+    inode_set_ctime( inode, le32_to_cpu( gin->ctime ), 0 );
     if( ( inode->i_size & ( BLOCKSIZE - 1 ) ) != 0 )
         inode->i_blocks++;
-    inode->i_version = ++global_event;
+
+    // This is probably not the right way to do this.
+    ++global_event;
+    atomic64_set( &inode->i_version, global_event );
+
     inode->i_generation = 1;  // ext2 uses this when accessed over the network.
 
     // Fill in the file system specific fields.
@@ -135,7 +137,7 @@ static int gfs_get_block(
 {
     struct gfs_inode_info *gi;
 
-    ENTERED
+    ENTERED;
 
     // This is a horrible hack. Always returning the first block.
     gi = GFS_I( inode );
@@ -145,7 +147,7 @@ static int gfs_get_block(
         printk( DEBUG_HEADER "iblock=%llu, b_blocknr=%llu\n",
                 __FUNCTION__,
                 (unsigned long long)iblock,
-                (unsigned long long)bh_result->b_blocknr ) )
+                (unsigned long long)bh_result->b_blocknr ) );
 
     // Zero means no error. Use -EIO for I/O errors.
     return 0;
@@ -155,7 +157,7 @@ static int gfs_get_block(
 // This method fills in a page in the page cache with data from the disk.
 int gfs_readpage( struct file *filp, struct page *page )
 {
-    ENTERED
+    ENTERED;
 
     // Use a kernel helper function.
     return mpage_readpage( page, gfs_get_block );

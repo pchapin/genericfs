@@ -22,21 +22,24 @@
 #include "dir.h"
 
 
-// Returns the size of the directory file in pages.
-static inline unsigned long dir_pages( struct inode *inode )
-{
-    return ( inode->i_size + PAGE_CACHE_SIZE-1 ) >> PAGE_CACHE_SHIFT;
-}
+/// WARNING!
+///
+/// The code below needs to be reworked to use folios! See the implementation of ext2_readdir
+/// for the necessary structure. Folios are a recent addition to the kernel to support efficient
+/// management of multiple, contiguous pages.
+
 
 // Unmaps a page and marks it as free in the page cache. Use this whenever you no longer need to
 // look at a page.
 // 
 static inline void gfs_put_page( struct page *page )
 {
-    ENTERED
+    ENTERED;
 
     kunmap( page );
-    page_cache_release( page );
+
+    // This function no longer exists.
+    // page_cache_release( page );
 }
 
 
@@ -48,7 +51,7 @@ static struct page *gfs_get_page( struct inode *dir, unsigned long n )
     struct address_space *mapping = dir->i_mapping;
     struct page          *page;
 
-    ENTERED
+    ENTERED;
     GENERIC_DEBUG( 2, printk( DEBUG_HEADER "dir = %p, n = %lu\n", __FUNCTION__, dir, n ) );
 
     page = read_mapping_page( mapping, n, NULL );
@@ -84,18 +87,23 @@ fail:
 //
 int gfs_readdir( struct file *filp, struct dir_context *ctx )
 {
-             loff_t pos    = ctx->pos;                // Current position in dir.
-    struct   inode *inode  = file_inode( filp );      // Dir's inode.
-    unsigned long   n      = pos >> PAGE_CACHE_SHIFT; // Page # in dir.
-    unsigned long   offset = pos & ~PAGE_CACHE_MASK;  // Offset on page.
-    unsigned long   npages = dir_pages( inode );      // Size of dir in pages.
+             loff_t pos    = ctx->pos;            // Current position in dir.
+    struct   inode *inode  = file_inode( filp );  // Dir's inode.
+    unsigned long   n      = pos >> PAGE_SHIFT;   // Page # in dir.
+    unsigned long   offset = pos & ~PAGE_MASK;    // Offset on page.
+    unsigned long   npages = dir_pages( inode );  // Size of dir in pages.
 
     char *kaddr;    // Address of dir page in kernel address space.
     char *limit;
     struct gfs_direntry *de;  // Points at dir entry on a page.
     struct page *page;
 
-    ENTERED
+    ENTERED;
+
+
+    /// NOTE! NOTE! NOTE!
+    /// For now just return at once and don't attempt to do things that no longer make sense.
+    return 0;
 
     // Verify that the current position is in reasonable bounds. This allows for an extra byte
     // for a name consisting of one character. I will have to check for sufficient space for
@@ -111,10 +119,10 @@ int gfs_readdir( struct file *filp, struct dir_context *ctx )
     kaddr = page_address( page );
     de = (struct gfs_direntry *)( kaddr + offset );
 
-    GENERIC_DEBUG( 3, printk( DEBUG_HEADER "n=%lu, offset=%lu\n", __FUNCTION__, n, offset ) )
-    GENERIC_DEBUG( 3, printk( DEBUG_HEADER "next=%d, inode=%d, len=%d\n", __FUNCTION__, le32_to_cpu( de->next_offset ), le32_to_cpu( de->inode ), le32_to_cpu( de->name_length ) ) )
+    GENERIC_DEBUG( 3, printk( DEBUG_HEADER "n=%lu, offset=%lu\n", __FUNCTION__, n, offset ) );
+    GENERIC_DEBUG( 3, printk( DEBUG_HEADER "next=%d, inode=%d, len=%d\n", __FUNCTION__, le32_to_cpu( de->next_offset ), le32_to_cpu( de->inode ), le32_to_cpu( de->name_length ) ) );
 
-    limit = kaddr + ( PAGE_CACHE_SIZE - sizeof(struct gfs_direntry) - 1 );
+    limit = kaddr + ( PAGE_SIZE - sizeof(struct gfs_direntry) - 1 );
 
     // If this directory is (could be) in bounds...
     if( (char *)de <= limit ) {
