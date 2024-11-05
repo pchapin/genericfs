@@ -12,6 +12,7 @@ doc/*.toc
 doc/Slides/*.aux
 doc/Slides/*.log
 doc/Slides/*.pdf
+doc/generated/*
 driver/.tmp_versions
 driver/Module.symvers
 driver/*.o
