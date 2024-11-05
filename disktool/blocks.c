@@ -1,6 +1,6 @@
 /*!
  * \file blocks.c
- * \author Peter C. Chapin <PChapin@vtc.vsc.edu>
+ * \author Peter Chapin <spicacality@kelseymountain.org>
  *
  * \brief This file provides the implementation of a block read/write abstraction. This version
  * uses the host file system as any user mode application might.

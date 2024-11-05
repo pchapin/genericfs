@@ -1,17 +1,9 @@
-/****************************************************************************
-FILE   : ops.c
-SUBJECT: Definition of various operations structures.
-AUTHOR : (C) Copyright 2011 by Peter C. Chapin
-
-
-Please send comments or bug reports to
-
-     Peter C. Chapin
-     Computer Information Systems
-     Vermont Technical College
-     Randolph Center, VT 05061
-     PChapin@vtc.vsc.edu
-****************************************************************************/
+/*!
+ * \file ops.c
+ * \author Peter Chapin <spicacality@kelseymountain.org>
+ *
+ * \brief Definitions of various operations structures.
+ */
 
 #include <generated/autoconf.h>
 
@@ -34,11 +26,11 @@ Please send comments or bug reports to
 // +++++
 
 struct super_operations gfs_super_operations = {
-  .alloc_inode   = gfs_alloc_inode,
-  .destroy_inode = gfs_destroy_inode,
-  .write_inode   = gfs_write_inode,
-  .put_super     = gfs_put_super,
-  .statfs        = gfs_statfs
+    .alloc_inode   = gfs_alloc_inode,
+    .destroy_inode = gfs_destroy_inode,
+    .write_inode   = gfs_write_inode,
+    .put_super     = gfs_put_super,
+    .statfs        = gfs_statfs
 };
 
 

@@ -1,9 +1,12 @@
 /*!
  * \file genericfs.h
- * \author Peter C. Chapin <PChapin@vtc.vsc.edu>
+ * \author Peter Chapin <spicacality@kelseymountain.org>
  *
  * \brief This file defines GenericFS on-disk data structures and some associated types and
  * macros.
+ *
+ * \todo Consider renaming this file `gfs.h` for consistency with the way other GenericFS
+ * datastructures are named.
  */
 
 #ifndef GENERICFS_H

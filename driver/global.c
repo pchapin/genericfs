@@ -1,21 +1,12 @@
-/****************************************************************************
-FILE   : global.c
-SUBJECT: Global data for the genericfs.
-AUTHOR : (C) Copyright 2011 by Peter C. Chapin
-
-This file contains the definitions of the global data used by the generic file system. Normally
-this material would be accessed via the superblock object so that each mounted partition would
-have its own.  However, setting that up is annoying. By making this data global we are limiting
-ourselves to mounting a single GenericFS partition. For now that is acceptable.
-
-Please send comments or bug reports to
-
-     Peter C. Chapin
-     Computer Information Systems
-     Vermont Technical College
-     Randolph Center, VT 05061
-     PChapin@vtc.vsc.edu
-****************************************************************************/
+/*!
+ * \file global.c
+ * \author Peter Chapin <spicacality@kelseymountain.org>
+ *
+ * \brief This file contains the definitions of the global data used by GenericFS. Normally this
+ * material would be accessed via the superblock object so that each mounted partition would
+ * have its own. However, setting that up is annoying. By making this data global we are
+ * limiting ourselves to mounting a single GenericFS partition. For now that is acceptable.
+ */
 
 #include <generated/autoconf.h>
 
@@ -30,7 +21,7 @@ Please send comments or bug reports to
 // Project specific.
 #include "global.h"
 
-MODULE_AUTHOR("Peter C. Chapin");
+MODULE_AUTHOR("Peter Chapin");
 MODULE_DESCRIPTION("A Generic File System");
 MODULE_LICENSE("GPL");
 

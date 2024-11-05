@@ -1,6 +1,6 @@
 /*!
  * \file verify.c
- * \author Peter C. Chapin <PChapin@vtc.vsc.edu>
+ * \author Peter Chapin <spicacality@kelseymountain.org>
  *
  * \brief Function to perform a file system check.
  */

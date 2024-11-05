@@ -1,19 +1,7 @@
-/****************************************************************************
-FILE   : global.h
-SUBJECT: Global data for the genericfs.
-AUTHOR : (C) Copyright 2011 by Peter C. Chapin
-
-This file contains the declarations of the global data used by the generic file system. See
-global.c for more information.
-
-Please send comments or bug reports to
-
-     Peter C. Chapin
-     Computer Information Systems
-     Vermont Technical College
-     Randolph Center, VT 05061
-     PChapin@vtc.vsc.edu
-****************************************************************************/
+/*!
+ * \file global.h
+ * \author Peter Chapin <spicacality@kelseymountain.org>
+ */
 
 #ifndef GLOBAL_H
 #define GLOBAL_H
@@ -26,29 +14,29 @@ Please send comments or bug reports to
 // Level 2: Show interesting "major" events in a function. Incomplete.
 // Level 3: Show specific details and trouble spots. Incomplete.
 //
-// "Complete" means that every appropriate place for this type of message produces a
-// message. For example, debug level 1 provides a complete trace of all calls to significant
-// GenericFS functions.  "Incomplete" means that there are places where a message might be
-// appropriate but none is produced. In general level 2 and level 3 messages are added on an
-// as-needed basis. Note that the levels are cumulative. Setting DEBUG_LEVEL to 3, for example,
-// also produces level 1 and level 2 messages. A lot of output might be produced at the higher
-// debug levels so keep tests as brief as possible when debugging deeply.
+// "Complete" means that every appropriate place for this type of message produces a message.
+// For example, debug level 1 provides a complete trace of all calls to significant GenericFS
+// functions. "Incomplete" means that there are places where a message might be appropriate but
+// none is produced. In general level 2 and level 3 messages are added on an as-needed basis.
+// Note that the levels are cumulative. Setting DEBUG_LEVEL to 3, for example, also produces
+// level 1 and level 2 messages. A lot of output might be produced at the higher debug levels so
+// keep tests as brief as possible when debugging deeply.
 
 // Use this header in printk messages to make debug messages stand out.
 #define DEBUG_HEADER KERN_INFO "GenericFS DEBUG: %s: "
 
 // A DEBUG_LEVEL of zero removes debugging code.
 #if DEBUG_LEVEL == 0
-  #define GENERIC_DEBUG(level, statement)
+    #define GENERIC_DEBUG(level, statement)
 #else
-  #define GENERIC_DEBUG(level, statement) \
-    if (DEBUG_LEVEL >= level) \
-      { statement; }
+    #define GENERIC_DEBUG(level, statement) \
+        if( DEBUG_LEVEL >= level ) \
+            { statement; }
 #endif
 
 // Use this macro at the start of a function to implement level 1 tracing.
 #define ENTERED \
-  GENERIC_DEBUG(1, printk(DEBUG_HEADER "Entered\n", __FUNCTION__))
+  GENERIC_DEBUG( 1, printk( DEBUG_HEADER "Entered\n", __FUNCTION__ ) )
 
 
 // This structure contains "supplementary" information required on a per mount basis. Each
@@ -72,9 +60,9 @@ extern struct kmem_cache *gfs_icache;
 extern int global_event;
 
 // Horrible hack.
-static inline struct gfs_inode_info *GFS_I(struct inode *inode)
+static inline struct gfs_inode_info *GFS_I( struct inode *inode )
 {
-  return container_of(inode, struct gfs_inode_info, vfs_inode);
+    return container_of( inode, struct gfs_inode_info, vfs_inode );
 }
 
 #endif

@@ -1,6 +1,6 @@
 /*!
  * \file blocks.h
- * \author Peter C. Chapin <PChapin@vtc.vsc.edu>
+ * \author Peter Chapin <spicacality@kelseymountain.org>
  *
  * \brief This file provides the interface to a block read/write abstraction. This abstraction
  * is implemented differently in the disktool and the driver. However, the higher level code

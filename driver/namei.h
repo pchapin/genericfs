@@ -1,16 +1,7 @@
-/****************************************************************************
-FILE   : namei.h
-SUBJECT: 
-AUTHOR : (C) Copyright 2011 by Peter C. Chapin
-
-Please send comments or bug reports to
-
-     Peter C. Chapin
-     Computer Information Systems
-     Vermont Technical College
-     Randolph Center, VT 05061
-     PChapin@vtc.vsc.edu
-****************************************************************************/
+/*!
+ * \file namei.h
+ * \author Peter Chapin <spicacality@kelseymountain.org>
+ */
 
 #ifndef NAMEI_H
 #define NAMEI_H

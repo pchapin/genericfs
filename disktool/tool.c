@@ -1,6 +1,6 @@
 /*!
  * \file tool.c
- * \author Peter C. Chapin <PChapin@vtc.vsc.edu>
+ * \author Peter Chapin <spicacality@kelseymountain.org>
  *
  * \brief Definitions of global data.
  */

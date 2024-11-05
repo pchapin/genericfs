@@ -1,17 +1,7 @@
-/****************************************************************************
-FILE   : ops.h
-SUBJECT: Declaration of various operations structures.
-AUTHOR : (C) Copyright 2011 by Peter C. Chapin
-
-
-Please send comments or bug reports to
-
-     Peter C. Chapin
-     Computer Information Systems
-     Vermont Technical College
-     Randolph Center, VT 05061
-     PChapin@vtc.vsc.edu
-****************************************************************************/
+/*!
+ * \file ops.h
+ * \author Peter Chapin <spicacality@kelseymountain.org>
+ */
 
 #ifndef OPS_H
 #define OPS_H
