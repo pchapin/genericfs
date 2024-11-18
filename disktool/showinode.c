@@ -21,7 +21,6 @@ void show_inode( int fd )
     int offset;
     int total;
     int freemap_size;
-    int inode_size;
     time_t temptime;
 
     clear( );
@@ -34,7 +33,6 @@ void show_inode( int fd )
 
     total = my_super->total_blocks;
     freemap_size = my_super->inodefreemap_blocks;
-    inode_size = my_super->inodetable_blocks;
   
     mvprintw( 1, 1, "Enter inode (0 - %d): ", total - 1 );
     echo( ); scanw( "%d", &choice ); noecho( );

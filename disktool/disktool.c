@@ -23,9 +23,9 @@
 
 static void compute_sizes(long block_count)
 {
-    // Assume one inode for every 4 KBytes of disk space. Thus inode count and block count are
+    // Assume one inode for every 4 KBytes of disk space. Thus, inode count and block count are
     // the same. This causes the block free map and the inode free map to be the same size. The
-    // code below assumes disk inodes are 64 bytes in size.
+    // code below assumes disk inodes are 64 bytes in size. That amount is hard coded.
     //
     freemap_bytesize = block_count / 8;
     if( block_count % 8 != 0 ) ++freemap_bytesize;

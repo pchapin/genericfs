@@ -46,8 +46,7 @@ static void initialize_counters( uint32_t *block_counters )
  * \param block_counters Pointer to an array of counters with one counter for each block. The
  * array is assumed to be properly sized.
  */
-static void find_first_indirection_blocks(
-    int fd, uint32_t first_indirect, uint32_t *block_counters )
+static void find_first_indirection_blocks( int fd, uint32_t first_indirect, uint32_t *block_counters )
 {
     uint8_t   workspace[BLOCKSIZE];
     uint32_t *block_numbers = ( uint32_t * )workspace;
