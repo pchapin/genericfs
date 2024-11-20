@@ -3,10 +3,16 @@
         "Bochs",
         "bootloader",
         "debugee",
+        "Disktool",
+        "genericfs",
         "inodes",
+        "insmod",
         "multibyte",
         "POSIX",
         "preconfigured",
+        "printk",
+        "rmmod",
+        "scriptability",
         "unpartitioned",
         "Williston"
     ]
