@@ -19,8 +19,8 @@
 #include <stdint.h>
 #endif
 
-#define BLOCKSIZE     4096
-#define BLOCKSIZEBITS   12
+#define BLOCKSIZE     4096  // This size is fixed for all GenericFS partitions.
+#define BLOCKSIZEBITS   12  // The log_2(BLOCKSIZE).
 
 // This structure describes the superblock on disk.
 struct gfs_super_block {
