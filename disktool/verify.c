@@ -126,10 +126,12 @@ PRIVATE void find_inode_blocks( int fd, uint32_t inode_number, uint32_t *block_c
     int i;
 
     // Where is the inode in the inode table? Here "relative" means relative to the start of the
-    // inode table. The first block in the inode table is relative block zero.
+    // inode table. The first block in the inode table is relative block zero. The inode offset
+    // is in terms of inode-sized unit. For example, an inode offset of 3 means a physical
+    // offset of 3 * sizeof( struct gfs_inode ).
     
-    uint32_t relative_block = inode_number / sizeof( struct gfs_inode );
-    uint32_t inode_offset   = inode_number % sizeof( struct gfs_inode );
+    uint32_t relative_block = inode_number / ( BLOCKSIZE / sizeof( struct gfs_inode ) );
+    uint32_t inode_offset   = inode_number % ( BLOCKSIZE / sizeof( struct gfs_inode ) );
 
     // Get the necessary block from the inode table and point at the right inode.
     lseek( fd, ( 1 + 2*freemap_blocksize + relative_block ) * BLOCKSIZE, SEEK_SET );
@@ -182,7 +184,7 @@ PRIVATE void scan_inodes( int fd, uint32_t *block_counters )
         lseek( fd, (1 + block_index) * BLOCKSIZE, SEEK_SET );
 	read( fd, workspace, BLOCKSIZE );
 
-        // Process all bytes in the block. This loop bails out after all blocks are handled.
+        // Process all bytes in the block. This loop bails out after all inodes are handled.
 	for( block_offset = 0; block_offset < BLOCKSIZE; ++block_offset ) {
 
             // Look at every bit of this byte.
